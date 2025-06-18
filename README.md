@@ -24,11 +24,11 @@ A autenticação de usuários no sistema é feita por meio de JSON Web Tokens - 
 lista todos os usuários do sistema
 
 ### '/usuarios/{id}' - GET:
-lista dados do usuário {id}^
+lista dados do usuário {id}
 
 ### '/usuarios/{id}' - PUT:
 lista dados do usuário {id}
-##### corpo:
+#### corpo:
 {
   "id": 1,
   "username": "newusername",
