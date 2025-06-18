@@ -9,7 +9,6 @@ from .serializers import UserSerializer, RegisterUserSerializer, ChangePasswordS
 
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
 def todos_usuarios(request):
     """
     Retorna todos os usuários criads
@@ -39,7 +38,7 @@ class UserViewSet(viewsets.ModelViewSet):
 class RegisterUserView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = RegisterUserSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [AllowAny]
     
 
 class ChangePasswordView(APIView):

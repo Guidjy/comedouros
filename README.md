@@ -11,14 +11,20 @@ A autenticação de usuários no sistema é feita por meio de JSON Web Tokens - 
 2. djangorestframework
 3. django-cors-headers
 4. djangorestframework-simplejwt
+5. Pillow
 
-```pip install django djangorestframework django-cors-headers djangorestframework-simplejwt```
+```pip install django djangorestframework django-cors-headers djangorestframework-simplejwt Pillow```
 
 # apps
 - comedouros (configurações)
 - usuarios: registro, login e CRUD de usuários
 
+
 # Rotas de api
+
+
+## usuarios
+
 
 ### **'/usuarios/' - GET**:
 lista todos os usuários do sistema
@@ -57,3 +63,38 @@ Permite editar todos os dados do usuário {id}
 
 ### **'/usuarios/{id}' - DELETE**:
 Deleta o usuário {id}
+
+
+## login
+
+### **'/api/token/' - POST**:
+Realiza o login do usuário
+#### **corpo**:
+```
+{
+    "username":
+    "password":
+}
+```
+#### **resposta**:
+```
+{
+    "refresh":
+    "access":
+}
+```
+
+### **'/api/token/refresh/' - POST**:
+Retorna um novo token de acesso (usado quando o token atual expira)
+#### **corpo**:
+```
+{
+    "refresh": <refresh token>
+}
+```
+#### **resposta**:
+```
+{
+    "access": <access token>
+}
+```

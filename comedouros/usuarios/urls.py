@@ -9,7 +9,7 @@ router.register(r'', views.UserViewSet)
 
 urlpatterns = [
     # CRUD usuários
-    path('', include(router.urls)),    
+    path('usuarios/', include(router.urls)),    
     # registrar
     path('register/', views.RegisterUserView.as_view(), name='register'),
     path('change_password/', views.ChangePasswordView.as_view(), name='change-password'),
