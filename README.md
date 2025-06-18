@@ -27,11 +27,12 @@ lista todos os usuários do sistema
 lista dados do usuário {id}
 
 ### **'/usuarios/{id}' - PUT**:
-lista dados do usuário {id}
-#### corpo:
+Permite parcialmente editar os dados do usuário {id}
+#### **corpo**:
 ```
+obs: todos campos opcionais
 {  
-  "username":  
+  "username":
   "email":  
   "first_name":  
   "last_name":  
@@ -39,3 +40,20 @@ lista dados do usuário {id}
   "is_active":  
 }
 ```
+
+### **'/usuarios/{id}' - PATCH**:
+Permite editar todos os dados do usuário {id}
+#### **corpo**:
+```
+{  
+  "username":
+  "email":  
+  "first_name":  
+  "last_name":  
+  "is_staff":  
+  "is_active":  
+}
+```
+
+### **'/usuarios/{id}' - DELETE**:
+Deleta o usuário {id}
