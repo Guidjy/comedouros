@@ -22,21 +22,23 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-*c2kd9um@0+_4&k=obfneks-!d*(d7a9l9sp-x%4882&7d-21='
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
 ALLOWED_HOSTS = []
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    'usuarios',
+    
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    
+    'rest_framework',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -47,6 +49,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'comedouros.urls'
@@ -120,3 +124,42 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# muda o model de usuário padrão
+
+AUTH_USER_MODEL = 'usuarios.User'
+
+
+# configurações do Simple JWT
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
+
+
+# configurações de produção
+
+PRODUCTION = False
+
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = not PRODUCTION
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated' if PRODUCTION else 'rest_framework.permissions.AllowAny',
+    ]
+}
+
+if PRODUCTION:
+    CORS_ALLOWED_ORIGINS = [
+        'http://localhost:5173',
+    ]
+else:
+    CORS_ALLOW_ALL_ORIGINS = True
+    
+ALLOWED_HOSTS = ['INSERIR DOMÍNIO'] if PRODUCTION else []
+
+
