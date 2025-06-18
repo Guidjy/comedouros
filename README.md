@@ -29,12 +29,13 @@ lista dados do usuário {id}
 ### '/usuarios/{id}' - PUT:
 lista dados do usuário {id}
 #### corpo:
-{
-  "id": 1,
-  "username": "newusername",
-  "email": "newemail@example.com",
-  "first_name": "NewFirstName",
-  "last_name": "NewLastName",
-  "is_staff": false,
-  "is_active": true
+```
+{  
+  "username":  
+  "email":  
+  "first_name":  
+  "last_name":  
+  "is_staff":  
+  "is_active":  
 }
+```
