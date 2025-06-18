@@ -3,7 +3,7 @@ Backend do sistema de comedouros automáticos para ovinos
 
 # observações
 
-### Autenticação:
+### **Autenticação**:
 A autenticação de usuários no sistema é feita por meio de JSON Web Tokens - [Sobre](https://jwt.io/introduction), [npm](https://www.npmjs.com/package/jsonwebtoken)
 
 # pacotes
@@ -20,15 +20,15 @@ A autenticação de usuários no sistema é feita por meio de JSON Web Tokens - 
 
 # Rotas de api
 
-### '/usuarios/' - GET:
+## '/usuarios/' - GET:
 lista todos os usuários do sistema
 
-### '/usuarios/{id}' - GET:
+## '/usuarios/{id}' - GET:
 lista dados do usuário {id}
 
-### '/usuarios/{id}' - PUT:
+## '/usuarios/{id}' - PUT:
 lista dados do usuário {id}
-#### corpo:
+### corpo:
 ```
 {  
   "username":  
