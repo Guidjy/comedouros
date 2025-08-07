@@ -18,7 +18,7 @@ corpo:
 ```
 
 ### (POST) '/accounts/api/token/'
-Retorna dois JSON Web Tokens, um de access e outro de refresh (usados para autenticação).
+Retorna dois JSON Web Tokens, um de access e outro de refresh (usados para autenticação).  
 corpo:
 ```
 {
@@ -28,7 +28,7 @@ corpo:
 ```
 
 ### (POST) '/accounts/api/token/refresh/'
-Retorna um access token novo.
+Retorna um access token novo.  
 corpo:
 ```
 {
@@ -37,14 +37,7 @@ corpo:
 ```
 
 ### (GET, PUT, PATCH, DELETE) '/accounts/users/<user_id>(opcional)/'
-Operações de Crud sobre os usuários.
-| Método | Endpoint          | Ação                    |
-| ------ | ----------------- | --------------          |
-| GET    | `/users/`         | Lista todos             |
-| GET    | `/users/{id}/`    | Busca um                |
-| PUT    | `/users/{id}/`    | Atualização completa    |
-| PATCH  | `/users/{id}/`    | Atualização parcial     |
-| DELETE | `/users/{id}/`    | Deleta                  |
+Operações de Crud sobre os usuários.  
 obs: Não usar método POST para criação de usuários. Usar rota '/accounts/register/' para isso.
 
 ### (GET) '/accounts/me/'
