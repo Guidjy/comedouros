@@ -14,14 +14,15 @@ from .serializers import UserSerializer
 
 class UserViewSet(viewsets.ModelViewSet):
     """
-    | Method | Endpoint          | Action         |
-    | ------ | ----------------- | -------------- |
-    | GET    | `/users/`         | List users     |
-    | POST   | `/users/`         | Create user    |
-    | GET    | `/users/{id}/`    | Retrieve user  |
-    | PUT    | `/users/{id}/`    | Full update    |
-    | PATCH  | `/users/{id}/`    | Partial update |
-    | DELETE | `/users/{id}/`    | Delete user    |
+    | Método | Endpoint          | Ação                    |
+    | ------ | ----------------- | --------------          |
+    | GET    | `/users/`         | Lista                   |
+    | GET    | `/users/{id}/`    | Busca                   |
+    | PUT    | `/users/{id}/`    | Atualização completa    |
+    | PATCH  | `/users/{id}/`    | Atualização parcial     |
+    | DELETE | `/users/{id}/`    | Deleta                  |
+    
+    obs: Não usar método POST para criação de usuários. Usar rota '/register/' para isso.
     """
     queryset = User.objects.all()
     serializer_class = UserSerializer
@@ -31,13 +32,13 @@ class UserViewSet(viewsets.ModelViewSet):
 @permission_classes([AllowAny])
 def register(request):
     """
-    Creates a new user.
+    Cria um novo usuário.
     ### body:
     {
-        "username": string,
-        "email": string,
-        "password": string,
-        "passwordConfirmation": string
+        "username": nome (string),
+        "email": email (string),
+        "password": senha (string),
+        "passwordConfirmation": senha novamente (string)
     }
     """
     username = request.data.get('username')
@@ -76,5 +77,8 @@ def register(request):
 
 @api_view(['GET'])
 def get_current_user(request):
+    """
+    Retorna os dados do usuário logado atualmente
+    """
     user = request.user
     return Response(UserSerializer(user).data)
