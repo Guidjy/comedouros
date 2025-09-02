@@ -1,4 +1,5 @@
 from django.db import models
+from datetime import date
 
 
 class Lote(models.Model):
@@ -6,58 +7,58 @@ class Lote(models.Model):
     n_animais = models.IntegerField(default=0)
     
     def __str__(self):
-        return f'{self.id} - {self.nome}'
-    
-
-class Raca(models.Model):
-    nome = models.CharField(max_length=50)
-    
-    def __str__(self):
-        return f'{self.nome}'
+        return f'{self.nome} ({self.id})'
     
 
 class Animal(models.Model):
     class Sexo(models.TextChoices):
         MACHO = 'macho'
         FEMEA = 'femea'
-        
-    class Categoria(models.TextChoices):
-        CORDEIRO = 'cordeiro(a)'
-        BORREGO = 'borrego(a)'
-        OVELHA = 'ovelha'
-        CARNEIRO = 'carneiro'
-        CAPAO = 'capão'
     
     brinco = models.IntegerField()
     animal_id_c = models.CharField(max_length=50)
     sexo = models.CharField(max_length=50, choices=Sexo.choices)
-    meses = models.IntegerField()
-    categoria = models.CharField(max_length=50, choices=Categoria.choices)
-    peso_vivo_atual_kg = models.FloatField()
+    meses = models.IntegerField(blank=True, null=True)
+    raca = models.CharField(blank=True, null=True)
+    categoria = models.CharField(blank=True, null=True)
     frequencia_livre = models.BooleanField(default=False)
     frequencia = models.IntegerField(blank=True, null=True)
     
     lote = models.ForeignKey(Lote, related_name='animais', null=True, on_delete=models.SET_NULL)
-    raca = models.ForeignKey(Raca, related_name='animais', null=True, on_delete=models.SET_NULL)
     
     def __str__(self):
         return f'{self.brinco} do lote {self.lote}'
     
+    def save(self, *args, **kwargs):
+        # verifica se um animal está sendo criado ou atualizado
+        is_new = self.pk is None
+        super().save(*args, **kwargs)
+        # se um novo animal estiver sendo criado, incrementa o número de animais no lote
+        if is_new and self.lote:
+            self.lote.n_animais += 1
+            self.lote.save()
+
+    def delete(self, *args, **kwargs):
+        # decrementa o número de animais no lote quando um é deletado
+        if self.lote:
+            self.lote.n_animais -= 1
+            self.lote.save()
+        super().delete(*args, **kwargs)
+        
 
 class Refeicao(models.Model):
-    data = models.DateField()
-    horario = models.TimeField()
-    duracao_min = models.FloatField()
-    comportamento = models.TextField(max_length=2500, blank=True, null=True)
+    # dados coletados no comedouro
+    horario_entrada = models.TimeField()
+    horario_saida = models.TimeField()
     consumo_kg = models.FloatField()
     peso_vivo_entrada_kg = models.FloatField()
-    peso_vivo_final_kg = models.FloatField()
-    gdm_entrada = models.FloatField()
-    gdm_final = models.FloatField()
+    
+    data = models.DateField(default=date.today)
+    comportamento = models.TextField(max_length=2500, blank=True, null=True)
     
     animal = models.ForeignKey(Animal, related_name='refeições', on_delete=models.CASCADE)
     
     def __str__(self):
-        return f'{self.animal} comeu {self.consumo_kg} - {self.data} as {self.horario}'
+        return f'{self.animal} comeu {self.consumo_kg} - {self.data} as {self.horario_entrada}'
     
     

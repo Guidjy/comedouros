@@ -6,7 +6,6 @@ from .views import *
 
 router = DefaultRouter()
 router.register(r'lotes', LoteViewSet)
-router.register(r'racas', RacaViewSet)
 router.register(r'animais', AnimalViewSet)
 router.register(r'refeicoes', RefeicaoViewSet)
 
