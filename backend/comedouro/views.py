@@ -42,14 +42,13 @@ def consumo_diario(request, animal_ou_lote, id):
         consumo = gera_consumo_diario_animal(id)
         if 'erro' in consumo:
             return Response(consumo, status=status.HTTP_400_BAD_REQUEST)
-        
         return Response(consumo, status=status.HTTP_200_OK)
     
     # gera o consumo diário de um lote
     elif animal_ou_lote == 'lote':
         consumo_lote = gera_consumo_diario_lote(id)
         if 'erro' in consumo_lote:
-            Response(consumo_lote, status=status.HTTP_400_BAD_REQUEST)
+            return Response(consumo_lote, status=status.HTTP_400_BAD_REQUEST)
         return Response(consumo_lote, status=status.HTTP_200_OK)
     
     # erro 
