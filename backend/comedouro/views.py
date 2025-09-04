@@ -31,16 +31,28 @@ class RefeicaoViewSet(viewsets.ModelViewSet):
 
 
 @api_view(['GET'])
-def comportamento_ingestivo(request, animal_id):
+def consumo_diario(request, animal_ou_lote, id):
     """Gera um relatório do comportamento ingestivo do
     animal de id "animal_id".
     - Retorno:
         - consumo_diario: [{"dd-mm-aaaa": consumo_kg}]
     """
-    relatorio = gera_comportamento_ingestivo(animal_id)
+    # gera o consumo diário de um animal
+    if animal_ou_lote == 'animal': 
+        consumo = gera_consumo_diario_animal(id)
+        if 'erro' in consumo:
+            return Response(consumo, status=status.HTTP_400_BAD_REQUEST)
+        
+        return Response(consumo, status=status.HTTP_200_OK)
     
-    if 'erro' in relatorio:
-        return Response(relatorio, status=status.HTTP_400_BAD_REQUEST)
+    # gera o consumo diário de um lote
+    elif animal_ou_lote == 'lote':
+        consumo_lote = gera_consumo_diario_lote(id)
+        if 'erro' in consumo_lote:
+            Response(consumo_lote, status=status.HTTP_400_BAD_REQUEST)
+        return Response(consumo_lote, status=status.HTTP_200_OK)
     
-    return Response(relatorio, status=status.HTTP_200_OK)
-    
+    # erro 
+    else:
+        return Response({'erro': f'argumento invárlido "{animal_ou_lote}"'}, status=status.HTTP_400_BAD_REQUEST)
+        

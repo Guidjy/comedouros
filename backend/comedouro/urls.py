@@ -12,6 +12,6 @@ router.register(r'refeicoes', views.RefeicaoViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('comportamento-ingestivo/<int:animal_id>', views.comportamento_ingestivo)
+    path('consumo-diario/<str:animal_ou_lote>/<int:id>', views.consumo_diario)
 ]
 
