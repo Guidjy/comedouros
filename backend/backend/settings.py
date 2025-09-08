@@ -82,6 +82,20 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+
+# MUDAR PARA VENV DEPOIS
+"""
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'comedouros',
+        'USER': 'django_user',
+        'PASSWORD': '4213',
+        'HOST': 'localhost',  # no IP hassle inside WSL
+        'PORT': '5432',
+    }
+}
+"""
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
