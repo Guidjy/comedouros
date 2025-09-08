@@ -98,4 +98,3 @@ def gera_consumo_diario_lote(lote_id):
             
         
     
-    

@@ -14,6 +14,11 @@ class LoteViewSet(viewsets.ModelViewSet):
     serializer_class = LoteSerializer
     
 
+class BrincoViewSet(viewsets.ModelViewSet):
+    queryset = Brinco.objects.all()
+    serializer_class = BrincoSerializer
+    
+
 class AnimalViewSet(viewsets.ModelViewSet):
     queryset = Animal.objects.all()
     serializer_class = AnimalSerializer

@@ -10,13 +10,19 @@ class Lote(models.Model):
         return f'{self.nome} ({self.id})'
     
 
+class Brinco(models.Model):
+    tag_id = models.CharField(max_length=128, blank=True, null=True)
+    numero = models.IntegerField()
+    
+    def __str__(self):
+        return f'{self.numero} - {self.tag_id}'
+    
+
 class Animal(models.Model):
     class Sexo(models.TextChoices):
         MACHO = 'macho'
         FEMEA = 'femea'
     
-    brinco = models.IntegerField()
-    animal_id_c = models.CharField(max_length=50)
     sexo = models.CharField(max_length=50, choices=Sexo.choices)
     meses = models.IntegerField(blank=True, null=True)
     raca = models.CharField(blank=True, null=True)
@@ -24,6 +30,7 @@ class Animal(models.Model):
     frequencia_livre = models.BooleanField(default=False)
     frequencia = models.IntegerField(blank=True, null=True)
     
+    brinco = models.ForeignKey(Brinco, related_name='animais', null=True, on_delete=models.SET_NULL)
     lote = models.ForeignKey(Lote, related_name='animais', null=True, on_delete=models.SET_NULL)
     
     def __str__(self):

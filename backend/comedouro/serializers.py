@@ -1,10 +1,16 @@
 from rest_framework import serializers
-from .models import Lote, Animal, Refeicao
+from .models import Lote, Brinco, Animal, Refeicao
 
 
 class LoteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lote
+        fields = '__all__'
+        
+
+class BrincoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Brinco
         fields = '__all__'
         
 
