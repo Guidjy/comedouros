@@ -6,7 +6,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from .models import *
 from .serializers import *
 
-from .calculos import *
+from .calculos import comportamento_ingestivo as ci
 
 
 class LoteViewSet(viewsets.ModelViewSet):
@@ -30,13 +30,13 @@ class RefeicaoViewSet(viewsets.ModelViewSet):
     queryset = Refeicao.objects.all()
     serializer_class = RefeicaoSerializer
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
-    filterset_fields = ['animal']
+    filterset_fields = ['animal', 'data']
     ordering_fields = ['data']
     ordering = ['-data']  # default ordering
 
 
 @api_view(['GET'])
-def consumo_diario(request, animal_ou_lote, id):
+def consumo_diario(request, animal_ou_lote, id, data=None):
     """Gera um relatório do comportamento ingestivo do
     animal de id "animal_id".
     - Retorno:
@@ -44,17 +44,24 @@ def consumo_diario(request, animal_ou_lote, id):
     """
     # gera o consumo diário de um animal
     if animal_ou_lote == 'animal': 
-        consumo = gera_consumo_diario_animal(id)
-        if 'erro' in consumo:
-            return Response(consumo, status=status.HTTP_400_BAD_REQUEST)
-        return Response(consumo, status=status.HTTP_200_OK)
-    
+        if data is None:
+            consumo_diario = ci.gera_consumo_diario_animal(id)
+        else:
+            consumo_diario = ci.gera_consumo_diario_animal(id, data)
+        
+        if 'erro' in consumo_diario:
+            return Response(consumo_diario, status=status.HTTP_400_BAD_REQUEST)
+        return Response(consumo_diario, status=status.HTTP_200_OK)
+        
     # gera o consumo diário de um lote
     elif animal_ou_lote == 'lote':
-        consumo_lote = gera_consumo_diario_lote(id)
-        if 'erro' in consumo_lote:
-            return Response(consumo_lote, status=status.HTTP_400_BAD_REQUEST)
-        return Response(consumo_lote, status=status.HTTP_200_OK)
+        if data is None:
+            consumo_diario = ci.gera_consumo_diario_lote(id)
+        else:
+            consumo_diario = ci.gera_consumo_diario_lote(id, data)
+        if 'erro' in consumo_diario:
+            return Response(consumo_diario, status=status.HTTP_400_BAD_REQUEST)
+        return Response(consumo_diario, status=status.HTTP_200_OK)
     
     # erro 
     else:

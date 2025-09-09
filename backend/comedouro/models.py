@@ -15,7 +15,9 @@ class Brinco(models.Model):
     numero = models.IntegerField()
     
     def __str__(self):
-        return f'{self.numero} - {self.tag_id}'
+        if self.numero:
+            return f'{self.numero}'
+        return f'{self.tag_id}'
     
 
 class Animal(models.Model):
