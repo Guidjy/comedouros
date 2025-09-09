@@ -24,7 +24,26 @@ class AnimalViewSet(viewsets.ModelViewSet):
     serializer_class = AnimalSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['lote', 'raca', 'categoria']
-
+    
+    def retrieve(self, request, *args, **kwargs):
+        # adiciona o peso atual a response
+        animal = Animal.objects.get(id=kwargs.get('pk'))
+        peso_atual = Refeicao.objects.filter(animal=animal).last().peso_vivo_entrada_kg
+        response =  super().retrieve(request, *args, **kwargs)
+        response.data['peso_atual'] = peso_atual
+        return response
+    
+    def list(self, request, *args, **kwargs):
+        response = super().list(request, *args, **kwargs)
+        # pega todos ids do queryset
+        qs = self.filter_queryset(self.get_queryset())
+        for animal_dict, animal in zip(response.data, qs):
+            refeicao = Refeicao.objects.filter(animal=animal).last()
+            animal_dict["peso_atual"] = (
+                refeicao.peso_vivo_entrada_kg if refeicao else None
+            )
+            
+        return response
     
 class RefeicaoViewSet(viewsets.ModelViewSet):
     queryset = Refeicao.objects.all()
