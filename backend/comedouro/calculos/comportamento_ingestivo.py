@@ -1,25 +1,20 @@
 import numpy as np
 from ..models import Animal, Refeicao
+from datetime import datetime
 
 
 # comportamento ingestivo
 
-def calcula_cmn_kg(peso_vivo_kg, cmn_porcentagem):
-    """Cálculo do CMN(Kg)
-    args:
-    - peso vivo atual (Kg)
-    - CMN %
-    """
-    return peso_vivo_kg * cmn_porcentagem
 
-
-def calcula_min_por_refeicao(hora_entrada, hora_saida):
-    """Calcula duração da refeição
-    args:
-    - horario de entrada
-    - horario de saida
-    """
-    return hora_saida - hora_entrada
+def calcula_duracao_refeicao(refeicao):
+    """Retorna a duração de uma refeição em minutos"""
+    hoje = datetime.today().date()
+    horario_entrada = datetime.combine(hoje, refeicao.horario_entrada)
+    horario_saida = datetime.combine(hoje, refeicao.horario_saida)
+    duracao = horario_saida - horario_entrada
+    duracao = duracao.total_seconds() / 60
+    
+    return duracao
 
 
 def gera_consumo_diario_animal(animal_id, data=None):
@@ -107,6 +102,48 @@ def gera_consumo_diario_lote(lote_id, data=None):
     return consumo_diario
         
         
-            
+def gera_minuto_por_refeicao_animal(animal_id, data=None):
+    """Gera um relatório da quantidade de minutos por refeição de um animal. Se um dia for
+    passado por argumento, são retornados os tempos exatos de cada refeição naquele dia, se não,
+    calcula-se a média das durações das refeições para cada dia.
+
+    Args:
+        animal_id: id do animal
+        data: data
+    """
+    try:
+        animal = Animal.objects.get(id=animal_id)
+    except Animal.DoesNotExist:
+        return {'erro': f'Não existe um animal com o id {animal_id}'}
+    
+    minuto_por_refeicao = {}
+    
+    if data is not None:
+        # pega as refeições do animal
+        refeicoes = Refeicao.objects.filter(animal=animal, data=data)
+        if not refeicoes.exists():
+            return {'erro': f'Não foram encontradas refeições para o animal de id {animal_id}'}
+        # adiciona as refeições a um dicionário {'número da refeição': duração}
+        i = 1
+        for refeicao in refeicoes:
+            minuto_por_refeicao[f'refeicao_n{i}'] = calcula_duracao_refeicao(refeicao)
+            i += 1
         
+    else:
+        # pega as refeições do animal
+        refeicoes = Refeicao.objects.filter(animal=animal)
+        if not refeicoes.exists():
+            return {'erro': f'Não foram encontradas refeições para o animal de id {animal_id}'}
+        # adiciona as refeições ao dicionário {'data': [duração_refeição1, duração_refeição2...]}
+        for refeicao in refeicoes:
+            duracao = calcula_duracao_refeicao(refeicao)
+            data = refeicao.data
+            if f'{data}' not in minuto_por_refeicao:
+                minuto_por_refeicao[f'{data}'] = []
+            minuto_por_refeicao[f'{data}'].append(duracao)
+        # calcula a média da duração das refeições a cada dia
+        for dia, duracao in minuto_por_refeicao.items():
+            minuto_por_refeicao[dia] = np.array(minuto_por_refeicao[dia], dtype=float).mean()
+        
+    return minuto_por_refeicao
     

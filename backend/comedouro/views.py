@@ -85,4 +85,9 @@ def consumo_diario(request, animal_ou_lote, id, data=None):
     # erro 
     else:
         return Response({'erro': f'argumento invárlido "{animal_ou_lote}"'}, status=status.HTTP_400_BAD_REQUEST)
-        
+
+
+@api_view(['GET'])
+def minuto_por_refeicao(reques, data=None):
+    minuto_por_refeicao = ci.gera_minuto_por_refeicao_animal(1, data)
+    return Response({'yurp': minuto_por_refeicao}, status=status.HTTP_200_OK)
