@@ -16,7 +16,7 @@ urlpatterns = [
     # comportamento ingestivo
     path('consumo-diario/<str:animal_ou_lote>/<int:id>/', views.consumo_diario),
     path('consumo-diario/<str:animal_ou_lote>/<int:id>/<str:data>/', views.consumo_diario),
-    path('minuto-por-refeicao/', views.minuto_por_refeicao),
-    path('minuto-por-refeicao/<str:data>/', views.minuto_por_refeicao),
+    path('minuto-por-refeicao/<str:animal_ou_lote>/<int:id>/', views.minuto_por_refeicao),
+    path('minuto-por-refeicao/<str:animal_ou_lote>/<int:id>/<str:data>/', views.minuto_por_refeicao),
 ]
 

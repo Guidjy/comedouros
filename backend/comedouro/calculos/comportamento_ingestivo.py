@@ -6,17 +6,6 @@ from datetime import datetime
 # comportamento ingestivo
 
 
-def calcula_duracao_refeicao(refeicao):
-    """Retorna a duração de uma refeição em minutos"""
-    hoje = datetime.today().date()
-    horario_entrada = datetime.combine(hoje, refeicao.horario_entrada)
-    horario_saida = datetime.combine(hoje, refeicao.horario_saida)
-    duracao = horario_saida - horario_entrada
-    duracao = duracao.total_seconds() / 60
-    
-    return duracao
-
-
 def gera_consumo_diario_animal(animal_id, data=None):
     """Gera um relatório do consumo diário total de um animal por dia, ou do consumo por refeição
     em um dia, se a data for especificada
@@ -102,6 +91,17 @@ def gera_consumo_diario_lote(lote_id, data=None):
     return consumo_diario
         
         
+def calcula_duracao_refeicao(refeicao):
+    """Retorna a duração de uma refeição em minutos"""
+    hoje = datetime.today().date()
+    horario_entrada = datetime.combine(hoje, refeicao.horario_entrada)
+    horario_saida = datetime.combine(hoje, refeicao.horario_saida)
+    duracao = horario_saida - horario_entrada
+    duracao = duracao.total_seconds() / 60
+    
+    return duracao
+
+        
 def gera_minuto_por_refeicao_animal(animal_id, data=None):
     """Gera um relatório da quantidade de minutos por refeição de um animal. Se um dia for
     passado por argumento, são retornados os tempos exatos de cada refeição naquele dia, se não,
@@ -146,4 +146,34 @@ def gera_minuto_por_refeicao_animal(animal_id, data=None):
             minuto_por_refeicao[dia] = np.array(minuto_por_refeicao[dia], dtype=float).mean()
         
     return minuto_por_refeicao
+    
+
+def gera_minuto_por_refeicao_lote(lote_id):
+    """Gera um relatório da quantidade de minutos por refeição de um lote. Se um dia for
+    passado por argumento, são retornados as medias de duração de cada refeição naquele dia, se não,
+    calcula-se a média das durações das refeições para cada dia.
+
+    Args:
+        lote_id: id do animal
+        data: data
+    """
+    animais = Animal.objects.filter(lote=lote_id)
+    if not animais.exists():
+        return {'erro': f'Não foram encontrados animais para o lote {lote_id}'}
+    
+    minutos_por_refeicao = {}
+    
+    for animal in animais:
+        refeicoes = Refeicao.objects.filter(animal=animal)
+        for refeicao in refeicoes:
+            data = refeicao.data
+            if f'{data}' not in minutos_por_refeicao:
+                minutos_por_refeicao[f'{data}'] = []
+            duracao = calcula_duracao_refeicao(refeicao)
+            minutos_por_refeicao[f'{data}'].append(duracao)
+    
+    for data, refeicao in minutos_por_refeicao.items():
+        minutos_por_refeicao[f'{data}'] = np.array(minutos_por_refeicao[f'{data}'], dtype=float).mean()
+    
+    return minutos_por_refeicao
     

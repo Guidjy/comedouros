@@ -88,6 +88,15 @@ def consumo_diario(request, animal_ou_lote, id, data=None):
 
 
 @api_view(['GET'])
-def minuto_por_refeicao(reques, data=None):
-    minuto_por_refeicao = ci.gera_minuto_por_refeicao_animal(1, data)
-    return Response({'yurp': minuto_por_refeicao}, status=status.HTTP_200_OK)
+def minuto_por_refeicao(request, animal_ou_lote, id, data=None):
+    if animal_ou_lote == 'animal':
+        if data is not None:
+            minuto_por_refeicao = ci.gera_minuto_por_refeicao_animal(id, data)
+        else:
+            minuto_por_refeicao = ci.gera_minuto_por_refeicao_animal(id)
+    else:
+        minuto_por_refeicao = ci.gera_minuto_por_refeicao_lote(id)
+    
+    if 'erro' in minuto_por_refeicao:
+        return Response(minuto_por_refeicao, status=status.HTTP_400_BAD_REQUEST)
+    return Response(minuto_por_refeicao, status=status.HTTP_200_OK)
