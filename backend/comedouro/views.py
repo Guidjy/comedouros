@@ -6,6 +6,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from .models import *
 from .serializers import *
 
+from .utils.csv import le_relatorio_cocho
 from .calculos import comportamento_ingestivo as ci
 from .calculos import desempenho as dp
 
@@ -58,6 +59,47 @@ class RefeicaoViewSet(viewsets.ModelViewSet):
     filterset_fields = ['animal', 'data']
     ordering_fields = ['data']
     ordering = ['-data']  # default ordering
+    
+
+@api_view(['POST'])
+def cria_animais_com_csv(request):
+    """Cria animais a partir de um arquivo csv
+    """
+    arquivo = request.FILES.get('arquivo')
+    animais, refeicoes = le_relatorio_cocho(arquivo)
+    
+    # adiciona os animais e refeições ao banco de dados
+    tag_dos_animais = {}
+    lote = Lote.objects.get(id=2)
+    for tag_id, numero in animais.items():
+        print(f'{tag_id}: {numero}')
+        # cria ou pega o brinco
+        brinco, _ = Brinco.objects.get_or_create(
+            tag_id=tag_id,
+            defaults={'numero': numero}
+        )
+        # cria ou pega oanimal
+        animal, _ = Animal.objects.get_or_create(
+            brinco=brinco,
+            defaults={'lote': lote}
+        )
+        tag_dos_animais[f'{tag_id}'] = animal
+        
+        
+    for refeicao in refeicoes:
+        animal = tag_dos_animais[f'{refeicao['animal']}']
+        
+        refeicao, _ = Refeicao.objects.get_or_create(
+            horario_entrada=refeicao['horario_entrada'],
+            horario_saida=refeicao['horario_saida'],
+            consumo_kg=refeicao['consumo_kg'],
+            peso_vivo_entrada_kg=refeicao['peso_vivo_entrada_kg'],
+            data=refeicao['data'],
+            animal=animal
+        )
+    
+    
+    return Response({'sucesso': 'Animais e refeições registradas com sucesso'}, status=status.HTTP_200_OK)
     
 
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -143,27 +185,49 @@ def evolucao_peso_por_dia(request, animal_id):
 
 
 @api_view(['GET'])
-def evolucao_consumo_diario(request, animal_id):
-    """Gera um relatório da evolução do consumo diário de um animal
+def evolucao_consumo_diario(request, animal_ou_lote, id):
+    """Gera um relatório da evolução do consumo diário de um animal ou lote
 
     Args:
-        animal_id (int): id do animal a gerar o relatório
+        id (int): id do animal ou lote a gerar o relatório
     """
-    try:
-        animal = Animal.objects.get(id=animal_id)
-    except Animal.DoesNotExist:
-        return Response({'erro': f'animal com id {animal_id} não existe'}, status=status.HTTP_400_BAD_REQUEST)
     
-    refeicoes = Refeicao.objects.filter(animal=animal)
-    if not refeicoes.exists():
-        return Response({'erro': f'não foram encontradas refeições para o animal de id {animal_id}'}, status=status.HTTP_400_BAD_REQUEST)
+    #animal
+    if animal_ou_lote == 'animal':
+        try:
+            animal = Animal.objects.get(id=id)
+        except Animal.DoesNotExist:
+            return Response({'erro': f'animal com id {id} não existe'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        refeicoes = Refeicao.objects.filter(animal=animal)
+        if not refeicoes.exists():
+            return Response({'erro': f'não foram encontradas refeições para o animal de id {id}'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        consumo = {}
+        for refeicao in refeicoes:
+            data = refeicao.data
+            if f'{data}' not in consumo:
+                consumo[f'{data}'] = 0
+            consumo[f'{data}'] += refeicao.consumo_kg
     
-    consumo = {}
-    for refeicao in refeicoes:
-        data = refeicao.data
-        if f'{data}' not in consumo:
-            consumo[f'{data}'] = 0
-        consumo[f'{data}'] += refeicao.consumo_kg
+    #lote
+    elif animal_ou_lote == 'lote':
+        animais = Animal.objects.filter(lote=id)
+        if not animais.exists():
+            return Response({'erro': f'não foram encontrados animais para o lote de id {id}'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        consumo = {}
+        for animal in animais:
+            refeicoes = Refeicao.objects.filter(animal=animal)
+            for refeicao in refeicoes:
+                data = refeicao.data
+                if f'{data}' not in consumo:
+                    consumo[f'{data}'] = 0
+                consumo[f'{data}'] += refeicao.consumo_kg
+                
+    # erro     
+    else:
+        return Response({'erro': f'argumento invárlido "{animal_ou_lote}"'}, status=status.HTTP_400_BAD_REQUEST)
         
     return Response(consumo, status=status.HTTP_200_OK)
 

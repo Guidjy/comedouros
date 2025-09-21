@@ -25,7 +25,7 @@ class Animal(models.Model):
         MACHO = 'macho'
         FEMEA = 'femea'
     
-    sexo = models.CharField(max_length=50, choices=Sexo.choices)
+    sexo = models.CharField(max_length=50, choices=Sexo.choices, null=True, blank=True)
     meses = models.IntegerField(blank=True, null=True)
     raca = models.CharField(blank=True, null=True)
     categoria = models.CharField(blank=True, null=True)
