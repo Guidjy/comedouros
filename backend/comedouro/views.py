@@ -7,6 +7,7 @@ from .models import *
 from .serializers import *
 
 from .calculos import comportamento_ingestivo as ci
+from .calculos import desempenho as dp
 
 
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -134,15 +135,9 @@ def evolucao_peso_por_dia(request, animal_id):
     if not refeicoes.exists():
         return Response({'erro': f'não foram encontradas refeições para o animal de id {animal_id}'}, status=status.HTTP_400_BAD_REQUEST)
     
-    pesos = []
+    pesos = {}
     for refeicao in refeicoes:
-        peso = {f'{refeicao.data}': refeicao.peso_vivo_entrada_kg}
-        for i in range(0, len(pesos)):
-            if f'{refeicao.data}' in pesos[i]:
-                pesos[i][f'{refeicao.data}'] = refeicao.peso_vivo_entrada_kg
-                break;
-        else:
-            pesos.append(peso)
+        pesos[f'{refeicao.data}'] = refeicao.peso_vivo_entrada_kg
         
     return Response(pesos, status=status.HTTP_200_OK)
 
@@ -162,4 +157,52 @@ def evolucao_consumo_diario(request, animal_id):
     refeicoes = Refeicao.objects.filter(animal=animal)
     if not refeicoes.exists():
         return Response({'erro': f'não foram encontradas refeições para o animal de id {animal_id}'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    consumo = {}
+    for refeicao in refeicoes:
+        data = refeicao.data
+        if f'{data}' not in consumo:
+            consumo[f'{data}'] = 0
+        consumo[f'{data}'] += refeicao.consumo_kg
+        
+    return Response(consumo, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+def evolucao_ganho(request, animal_id):
+    """Gera um relatório da evolução de ganho de peso de um animal
+
+    Args:
+        animal_id (int): id do animal
+    """
+    try:
+        animal = Animal.objects.get(id=animal_id)
+    except Animal.DoesNotExist:
+        return Response({'erro': f'Não existe um animal com o id {animal_id}'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    ganho = dp.calcula_ganho_peso_animal(animal)
+    if 'erro' in ganho:
+        return Response(ganho, status=status.HTTP_400_BAD_REQUEST)
+    return Response(ganho, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+def evolucao_gmd(request, animal_id):
+    """Gera um relatório da evolução do GMD (ganho médio diário)
+
+    Args:
+        animal_id (int): id do animal
+    """
+    try:
+        animal = Animal.objects.get(id=animal_id)
+    except Animal.DoesNotExist:
+        return Response({'erro': f'Não existe um animal com o id {animal_id}'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    gmd = dp.calcula_gmd_animal(animal)
+    if 'erro' in gmd:
+        return Response(gmd, status=status.HTTP_400_BAD_REQUEST)
+    return Response(gmd, status=status.HTTP_200_OK)
+    
+    
+        
     

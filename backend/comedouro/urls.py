@@ -12,12 +12,17 @@ router.register(r'refeicoes', views.RefeicaoViewSet)
 
 
 urlpatterns = [
+    # CRUD
     path('', include(router.urls)),
     # comportamento ingestivo
     path('consumo-diario/<str:animal_ou_lote>/<int:id>/', views.consumo_diario),
     path('consumo-diario/<str:animal_ou_lote>/<int:id>/<str:data>/', views.consumo_diario),
     path('minuto-por-refeicao/<str:animal_ou_lote>/<int:id>/', views.minuto_por_refeicao),
     path('minuto-por-refeicao/<str:animal_ou_lote>/<int:id>/<str:data>/', views.minuto_por_refeicao),
-    path('evolucao-peso-por-dia/<int:animal_id>', views.evolucao_peso_por_dia)
+    # desempenho
+    path('evolucao-peso-por-dia/<int:animal_id>/', views.evolucao_peso_por_dia),
+    path('evolucao-consumo-diario/<int:animal_id>/', views.evolucao_consumo_diario),
+    path('evolucao-ganho/<int:animal_id>/', views.evolucao_ganho),
+    path('evolucao-gmd/<int:animal_id>/', views.evolucao_gmd),
 ]
 
