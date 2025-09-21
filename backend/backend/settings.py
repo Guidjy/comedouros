@@ -185,4 +185,4 @@ else:
     
 
 # allowed hosts
-ALLOWED_HOSTS = ['localhost', '127.0.0.1'] if not PRODUCTION else ['your-backend-domain.com']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'comedouros.onrender.com'] if not PRODUCTION else ['your-backend-domain.com']
