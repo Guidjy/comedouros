@@ -9,6 +9,11 @@ from .serializers import *
 from .calculos import comportamento_ingestivo as ci
 
 
+# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+# Operações CRUD
+# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+
 class LoteViewSet(viewsets.ModelViewSet):
     queryset = Lote.objects.all()
     serializer_class = LoteSerializer
@@ -52,6 +57,11 @@ class RefeicaoViewSet(viewsets.ModelViewSet):
     filterset_fields = ['animal', 'data']
     ordering_fields = ['data']
     ordering = ['-data']  # default ordering
+    
+
+# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+# Comportamento ingestivo
+# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 
 @api_view(['GET'])
@@ -100,3 +110,56 @@ def minuto_por_refeicao(request, animal_ou_lote, id, data=None):
     if 'erro' in minuto_por_refeicao:
         return Response(minuto_por_refeicao, status=status.HTTP_400_BAD_REQUEST)
     return Response(minuto_por_refeicao, status=status.HTTP_200_OK)
+
+
+# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+# Desempenho
+# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+
+@api_view(['GET'])
+def evolucao_peso_por_dia(request, animal_id):
+    """Gera um relatório da evolução do peso vivo de um animal
+
+    Args:
+        animal_id: id do animal
+    """
+    
+    try:
+        animal = Animal.objects.get(id=animal_id)
+    except Animal.DoesNotExist:
+        return Response({'erro': f'animal com id {animal_id} não existe'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    refeicoes = Refeicao.objects.filter(animal=animal)
+    if not refeicoes.exists():
+        return Response({'erro': f'não foram encontradas refeições para o animal de id {animal_id}'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    pesos = []
+    for refeicao in refeicoes:
+        peso = {f'{refeicao.data}': refeicao.peso_vivo_entrada_kg}
+        for i in range(0, len(pesos)):
+            if f'{refeicao.data}' in pesos[i]:
+                pesos[i][f'{refeicao.data}'] = refeicao.peso_vivo_entrada_kg
+                break;
+        else:
+            pesos.append(peso)
+        
+    return Response(pesos, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+def evolucao_consumo_diario(request, animal_id):
+    """Gera um relatório da evolução do consumo diário de um animal
+
+    Args:
+        animal_id (int): id do animal a gerar o relatório
+    """
+    try:
+        animal = Animal.objects.get(id=animal_id)
+    except Animal.DoesNotExist:
+        return Response({'erro': f'animal com id {animal_id} não existe'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    refeicoes = Refeicao.objects.filter(animal=animal)
+    if not refeicoes.exists():
+        return Response({'erro': f'não foram encontradas refeições para o animal de id {animal_id}'}, status=status.HTTP_400_BAD_REQUEST)
+    
