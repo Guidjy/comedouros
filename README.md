@@ -94,7 +94,7 @@ Retorna dados sobre o usuário logado atualmente.
 { "sucesso": "Animais e refeições registradas com sucesso" }
 ```
 
-## 2. Comportamento Ingestivo
+## 3. Comportamento Ingestivo
 
 ### Consumo diário
 
@@ -118,7 +118,7 @@ Retorna dados sobre o usuário logado atualmente.
 * `numero`: número do brinco ou id do lote
 * `data` (opcional): filtra por data específica
 
-## 3. Desempenho
+## 4. Desempenho
 
 ### Evolução do peso por dia
 
