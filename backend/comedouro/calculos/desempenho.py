@@ -47,12 +47,10 @@ def calcula_gmd_animal(animal):
     gmd = {}
     dias = list(pesos.keys())
     pesos = list(pesos.values())
-    print(dias)
-    print(pesos)
     soma_dos_ganhos = 0
     for i in range(1, len(dias)):
         soma_dos_ganhos += pesos[i] - pesos[i-1]
-        gmd[f'{dias[i]}'] = round(soma_dos_ganhos / (i), 2)
+        gmd[f'{dias[i]}'] = round(soma_dos_ganhos / i, 2)
     
     return gmd
             

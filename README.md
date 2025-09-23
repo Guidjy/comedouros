@@ -6,7 +6,7 @@ Comedouros automáticos
 
 # Endpoints da api  
 
-## Cadastro, login, e CRUD de usuários  
+## 1. Cadastro, login, e CRUD de usuários  
 
 ### (POST) '/accounts/register/': 
 Cria um novo usuário.  
@@ -47,12 +47,114 @@ obs: Não usar método POST para criação de usuários. Usar rota '/accounts/re
 Retorna dados sobre o usuário logado atualmente.
 
 
-## CRUD de animais e refeições
+## 2. Operações CRUD
 
+### Lotes
 
-Esses endpoints permitem criar, listar, atualizar e excluir registros relacionados a **lotes**, **raças**, **brincos**, **animais** e **refeições**.
+**Endpoint:** `/lotes/`
+**Método:** GET, POST, PUT, PATCH, DELETE
+**Descrição:** Operações CRUD para o modelo `Lote`.
 
-ADICIONAR AQUI
+### Brincos
 
----
+**Endpoint:** `/brincos/`
+**Método:** GET, POST, PUT, PATCH, DELETE
+**Descrição:** Operações CRUD para o modelo `Brinco`.
+
+### Animais
+
+**Endpoint:** `/animais/`
+**Método:** GET, POST, PUT, PATCH, DELETE
+**Descrição:** Operações CRUD para o modelo `Animal`.
+**Filtros disponíveis:** `lote`, `raca`, `categoria`
+**Observações:**
+
+* O campo `peso_atual` é adicionado automaticamente na resposta de `retrieve` e `list`.
+
+### Refeições
+
+**Endpoint:** `/refeicoes/`
+**Método:** GET, POST, PUT, PATCH, DELETE
+**Descrição:** Operações CRUD para o modelo `Refeicao`.
+**Filtros disponíveis:** `animal`, `data`
+**Ordenação padrão:** `data` decrescente
+
+### Upload de CSV de animais
+
+**Endpoint:** `/cria-animais-com-csv/`
+**Método:** POST
+**Descrição:** Cria animais e refeições a partir de um arquivo CSV.
+**Parâmetros:**
+
+* `arquivo` (arquivo CSV)
+
+**Retorno:**
+
+```json
+{ "sucesso": "Animais e refeições registradas com sucesso" }
+```
+
+## 2. Comportamento Ingestivo
+
+### Consumo diário
+
+**Endpoint:** `/consumo-diario/<animal_ou_lote>/<numero>/` ou `/consumo-diario/<animal_ou_lote>/<numero>/<data>/`
+**Método:** GET
+**Descrição:** Retorna o consumo diário de um animal ou lote.
+**Parâmetros:**
+
+* `animal_ou_lote`: `animal` ou `lote`
+* `numero`: número do brinco ou id do lote
+* `data` (opcional): filtra por data específica
+
+### Minuto por refeição
+
+**Endpoint:** `/minuto-por-refeicao/<animal_ou_lote>/<numero>/` ou `/minuto-por-refeicao/<animal_ou_lote>/<numero>/<data>/`
+**Método:** GET
+**Descrição:** Retorna o tempo médio gasto por refeição.
+**Parâmetros:**
+
+* `animal_ou_lote`: `animal` ou `lote`
+* `numero`: número do brinco ou id do lote
+* `data` (opcional): filtra por data específica
+
+## 3. Desempenho
+
+### Evolução do peso por dia
+
+**Endpoint:** `/evolucao-peso-por-dia/<numero>/`
+**Método:** GET
+**Descrição:** Retorna a evolução do peso vivo de um animal.
+**Parâmetros:**
+
+* `numero`: número do brinco do animal
+
+### Evolução do consumo diário
+
+**Endpoint:** `/evolucao-consumo-diario/<animal_ou_lote>/<numero>/`
+**Método:** GET
+**Descrição:** Retorna a evolução do consumo diário de um animal ou lote.
+**Parâmetros:**
+
+* `animal_ou_lote`: `animal` ou `lote`
+* `numero`: número do brinco ou id do lote
+
+### Evolução do ganho de peso
+
+**Endpoint:** `/evolucao-ganho/<numero>/`
+**Método:** GET
+**Descrição:** Retorna a evolução do ganho de peso de um animal.
+**Parâmetros:**
+
+* `numero`: número do brinco do animal
+
+### Evolução do GMD (Ganho Médio Diário)
+
+**Endpoint:** `/evolucao-gmd/<numero>/`
+**Método:** GET
+**Descrição:** Retorna a evolução do ganho médio diário de um animal.
+**Parâmetros:**
+
+* `numero`: número do brinco do animal
+
 
