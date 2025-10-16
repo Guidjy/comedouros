@@ -339,7 +339,7 @@ def evolucao_custo_diario(request, animal_ou_lote, numero_ou_nome, preco_kg_raca
         preco_kg_racao (str): preço do kilograma da ração no formato 'x.y'
 
     Returns:
-        aaaa--mm-dd: (float) custo no dia
+        [aaaa--mm-dd: (float) custo no dia]
     """
     
     preco_kg_racao = float(preco_kg_racao)
@@ -350,6 +350,7 @@ def evolucao_custo_diario(request, animal_ou_lote, numero_ou_nome, preco_kg_raca
         except Animal.DoesNotExist:
             return Response({'erro': f'Não existe um animal com um brinco de número {numero_ou_nome}'}, status=status.HTTP_400_BAD_REQUEST)
         
+        # calcula o custo de um animal em um dia e adiciona a um dicionário
         refeicoes = Refeicao.objects.filter(animal=animal)
         evolucao_custo = {}
         for refeicao in refeicoes:
@@ -365,6 +366,7 @@ def evolucao_custo_diario(request, animal_ou_lote, numero_ou_nome, preco_kg_raca
         if not animais.exists():
             return Response({'erro': f'não foram encontrados animais para o lote de id {numero_ou_nome}'}, status=status.HTTP_400_BAD_REQUEST)
         
+        # calcula o custo de um lote em um dia e adiciona a um dicionário
         evolucao_custo = {}
         for animal in animais:
             refeicoes = Refeicao.objects.filter(animal=animal)
@@ -377,5 +379,56 @@ def evolucao_custo_diario(request, animal_ou_lote, numero_ou_nome, preco_kg_raca
             
         return Response(evolucao_custo, status=status.HTTP_200_OK)
     
+    else:
+        return Response({'erro': f'argumento invárlido "{animal_ou_lote}"'}, status=status.HTTP_400_BAD_REQUEST)
+    
+
+@api_view(['GET'])
+def ganho_por_dia(request, animal_ou_lote, numero_ou_nome, reais_por_kg_de_peso_vivo):
+    """Gera um relatório do ganho por dia em reais de um animal ou de um lote.
+
+    Args:
+        animal_ou_lote (str): string 'animal' ou 'lote' para decidir qual relatório gerar.
+        numero_ou_nome (str): numero do brinco do animal ou nome do lote
+        reais_por_kg_de_peso_vivo (str): preço do kilograma de peso vivo de um animal (formato x.y)
+
+    Returns:
+        aaaa--mm-dd: (float) custo no dia
+    """
+    reais_por_kg_de_peso_vivo = float(reais_por_kg_de_peso_vivo)
+    
+    if animal_ou_lote == 'animal':
+        try:
+            animal = Animal.objects.get(brinco__numero=numero_ou_nome)
+        except Animal.DoesNotExist:
+            return Response({'erro': f'Não existe um animal com um brinco de número {numero_ou_nome}'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # ganho por dia = GMD * reais/kg_pv
+        gmd = dp.calcula_gmd_animal(animal)
+        ganho_por_dia = {}
+        for data, ganho in gmd.items():
+            ganho_por_dia[f'{data}'] = ganho * reais_por_kg_de_peso_vivo
+            ganho_por_dia[f'{data}'] = round(ganho_por_dia[f'{data}'], 2)
+        
+        return Response(ganho_por_dia, status=status.HTTP_200_OK)
+    
+    elif animal_ou_lote == 'lote':
+        animais = Animal.objects.filter(lote__nome=numero_ou_nome)
+        if not animais.exists():
+            return Response({'erro': f'não foram encontrados animais para o lote de id {numero_ou_nome}'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        ganho_por_dia = {}
+        for animal in animais:
+            # ganho por dia = GMD * reais/kg_pv
+            gmd = dp.calcula_gmd_animal(animal)
+            print(gmd)
+            for data, ganho in gmd.items():
+                if f'{data}' not in ganho_por_dia:
+                    ganho_por_dia[f'{data}'] = 0
+                ganho_por_dia[f'{data}'] += ganho * reais_por_kg_de_peso_vivo
+                ganho_por_dia[f'{data}'] = round(ganho_por_dia[f'{data}'], 2)
+            
+        return Response(ganho_por_dia, status=status.HTTP_200_OK)  
+
     else:
         return Response({'erro': f'argumento invárlido "{animal_ou_lote}"'}, status=status.HTTP_400_BAD_REQUEST)
