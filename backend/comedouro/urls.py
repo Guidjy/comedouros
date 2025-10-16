@@ -25,5 +25,8 @@ urlpatterns = [
     path('evolucao-consumo-diario/<str:animal_ou_lote>/<str:numero>/', views.evolucao_consumo_diario),
     path('evolucao-ganho/<int:numero>/', views.evolucao_ganho),
     path('evolucao-gmd/<int:numero>/', views.evolucao_gmd),
+    #viabilidade
+    path('custo-total/<str:animal_ou_lote>/<str:numero_ou_nome>/<str:preco_kg_racao>', views.custo_total),
+    path('evolucao-custo-diario/<str:animal_ou_lote>/<str:numero_ou_nome>/<str:preco_kg_racao>', views.evolucao_custo_diario),
 ]
 

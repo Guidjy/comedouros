@@ -277,6 +277,105 @@ def evolucao_gmd(request, numero):
         return Response(gmd, status=status.HTTP_400_BAD_REQUEST)
     return Response(gmd, status=status.HTTP_200_OK)
     
-    
+
+# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+# Viabilidade
+# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+
+@api_view(['GET'])
+def custo_total(request, animal_ou_lote, numero_ou_nome, preco_kg_racao):
+    """Gera um relatório do custo total de ração de um animal ou de um lote.
+
+    Args:
+        animal_ou_lote (str): string 'animal' ou 'lote' para decidir qual relatório gerar.
+        numero_ou_nome (str): numero do brinco do animal ou nome do lote
+        preco_kg_racao (str): preço do kilograma da ração no formato 'x.y'
         
+    Returns:
+        custo_total: (float) custo total
+    """
+    preco_kg_racao = float(preco_kg_racao)
     
+    if animal_ou_lote == 'animal':
+        try:
+            animal = Animal.objects.get(brinco__numero=numero_ou_nome)
+        except Animal.DoesNotExist:
+            return Response({'erro': f'Não existe um animal com um brinco de número {numero_ou_nome}'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        refeicoes = Refeicao.objects.filter(animal=animal)
+        custo_total = 0
+        for refeicao in refeicoes:
+            custo_total += refeicao.consumo_kg * preco_kg_racao
+        
+        return Response({'custo_total': round(custo_total, 2)}, status=status.HTTP_200_OK)
+    
+    elif animal_ou_lote == 'lote':
+        animais = Animal.objects.filter(lote__nome=numero_ou_nome)
+        if not animais.exists():
+            return Response({'erro': f'não foram encontrados animais para o lote de id {numero_ou_nome}'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # equivalente a dois laços nestados so q so faz uma consulta sql
+        from django.db.models import Sum, F
+        custo_total = (
+            Refeicao.objects
+            .filter(animal__in=animais)
+            .aggregate(total=Sum(F('consumo_kg') * preco_kg_racao))['total']
+        )
+            
+        return Response({'custo_total': round(custo_total, 2)}, status=status.HTTP_200_OK)
+    
+    else:
+        return Response({'erro': f'argumento invárlido "{animal_ou_lote}"'}, status=status.HTTP_400_BAD_REQUEST)
+    
+
+@api_view(['GET'])
+def evolucao_custo_diario(request, animal_ou_lote, numero_ou_nome, preco_kg_racao):
+    """Gera um relatório do custo total de ração de um animal ou de um lote.
+
+    Args:
+        animal_ou_lote (str): string 'animal' ou 'lote' para decidir qual relatório gerar.
+        numero_ou_nome (str): numero do brinco do animal ou nome do lote
+        preco_kg_racao (str): preço do kilograma da ração no formato 'x.y'
+
+    Returns:
+        aaaa--mm-dd: (float) custo no dia
+    """
+    
+    preco_kg_racao = float(preco_kg_racao)
+    
+    if animal_ou_lote == 'animal':
+        try:
+            animal = Animal.objects.get(brinco__numero=numero_ou_nome)
+        except Animal.DoesNotExist:
+            return Response({'erro': f'Não existe um animal com um brinco de número {numero_ou_nome}'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        refeicoes = Refeicao.objects.filter(animal=animal)
+        evolucao_custo = {}
+        for refeicao in refeicoes:
+            data = refeicao.data
+            if f'{data}' not in evolucao_custo:
+                evolucao_custo[f'{data}'] = 0
+            evolucao_custo[f'{data}'] += refeicao.consumo_kg * preco_kg_racao
+        
+        return Response(evolucao_custo, status=status.HTTP_200_OK)
+    
+    elif animal_ou_lote == 'lote':
+        animais = Animal.objects.filter(lote__nome=numero_ou_nome)
+        if not animais.exists():
+            return Response({'erro': f'não foram encontrados animais para o lote de id {numero_ou_nome}'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        evolucao_custo = {}
+        for animal in animais:
+            refeicoes = Refeicao.objects.filter(animal=animal)
+            for refeicao in refeicoes:
+                data = refeicao.data
+                if f'{data}' not in evolucao_custo:
+                    evolucao_custo[f'{data}'] = 0
+                evolucao_custo[f'{data}'] += refeicao.consumo_kg * preco_kg_racao
+                evolucao_custo[f'{data}'] = round(evolucao_custo[f'{data}'], 2)
+            
+        return Response(evolucao_custo, status=status.HTTP_200_OK)
+    
+    else:
+        return Response({'erro': f'argumento invárlido "{animal_ou_lote}"'}, status=status.HTTP_400_BAD_REQUEST)
