@@ -51,7 +51,7 @@ def gera_consumo_diario_animal(animal_id, data=None):
     return consumo_diario
 
 
-def gera_consumo_diario_lote(lote_id, data=None):
+def gera_consumo_diario_lote(lote_nome, data=None):
     """Gera um relatório do consumo diário total de um lote por dia
 
     Args:
@@ -59,9 +59,9 @@ def gera_consumo_diario_lote(lote_id, data=None):
     """
     
     # busca todos os animais do lote
-    animais = Animal.objects.filter(lote=lote_id)
+    animais = Animal.objects.filter(lote__nome=lote_nome)
     if not animais.exists():
-        return {'erro': f'Não foram encontrados animais no lote {lote_id}'}
+        return {'erro': f'Não foram encontrados animais no lote {lote_nome}'}
         
     # percorre todos os animais do lote
     consumo_diario = {}  # {'aaaa-mm-dd': x(Kg)}
@@ -148,18 +148,18 @@ def gera_minuto_por_refeicao_animal(animal_id, data=None):
     return minuto_por_refeicao
     
 
-def gera_minuto_por_refeicao_lote(lote_id):
+def gera_minuto_por_refeicao_lote(lote_nome):
     """Gera um relatório da quantidade de minutos por refeição de um lote. Se um dia for
     passado por argumento, são retornados as medias de duração de cada refeição naquele dia, se não,
     calcula-se a média das durações das refeições para cada dia.
 
     Args:
-        lote_id: id do animal
+        lote_nome: nome do lote
         data: data
     """
-    animais = Animal.objects.filter(lote=lote_id)
+    animais = Animal.objects.filter(lote__nome=lote_nome)
     if not animais.exists():
-        return {'erro': f'Não foram encontrados animais para o lote {lote_id}'}
+        return {'erro': f'Não foram encontrados animais para o lote {lote_nome}'}
     
     minutos_por_refeicao = {}
     

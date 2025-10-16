@@ -108,7 +108,7 @@ def cria_animais_com_csv(request):
 
 
 @api_view(['GET'])
-def consumo_diario(request, animal_ou_lote, numero, data=None):
+def consumo_diario(request, animal_ou_lote, numero_ou_nome, data=None):
     """Gera um relatório do comportamento ingestivo do
     animal de id "animal_id".
     - Retorno:
@@ -117,9 +117,9 @@ def consumo_diario(request, animal_ou_lote, numero, data=None):
     # gera o consumo diário de um animal
     if animal_ou_lote == 'animal': 
         try:
-            animal = Animal.objects.get(brinco__numero=numero)
+            animal = Animal.objects.get(brinco__numero=numero_ou_nome)
         except Animal.DoesNotExist:
-            return Response({'erro': f'Não existe um animal com um brinco de número {numero}'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'erro': f'Não existe um animal com um brinco de número {numero_ou_nome}'}, status=status.HTTP_400_BAD_REQUEST)
         
         if data is None:
             consumo_diario = ci.gera_consumo_diario_animal(animal.id)
@@ -133,9 +133,9 @@ def consumo_diario(request, animal_ou_lote, numero, data=None):
     # gera o consumo diário de um lote
     elif animal_ou_lote == 'lote':
         if data is None:
-            consumo_diario = ci.gera_consumo_diario_lote(numero)
+            consumo_diario = ci.gera_consumo_diario_lote(numero_ou_nome)
         else:
-            consumo_diario = ci.gera_consumo_diario_lote(numero, data)
+            consumo_diario = ci.gera_consumo_diario_lote(numero_ou_nome, data)
         if 'erro' in consumo_diario:
             return Response(consumo_diario, status=status.HTTP_400_BAD_REQUEST)
         return Response(consumo_diario, status=status.HTTP_200_OK)
@@ -146,19 +146,20 @@ def consumo_diario(request, animal_ou_lote, numero, data=None):
 
 
 @api_view(['GET'])
-def minuto_por_refeicao(request, animal_ou_lote, numero, data=None):
+def minuto_por_refeicao(request, animal_ou_lote, numero_ou_nome, data=None):
     if animal_ou_lote == 'animal':
         try:
-            animal = Animal.objects.get(brinco__numero=numero)
+            animal = Animal.objects.get(brinco__numero=numero_ou_nome)
         except Animal.DoesNotExist:
-            return Response({'erro': f'Não existe um animal com um brinco de número {numero}'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'erro': f'Não existe um animal com um brinco de número {numero_ou_nome}'}, status=status.HTTP_400_BAD_REQUEST)
         
         if data is not None:
             minuto_por_refeicao = ci.gera_minuto_por_refeicao_animal(animal.id, data)
         else:
             minuto_por_refeicao = ci.gera_minuto_por_refeicao_animal(animal.id)
+            
     else:
-        minuto_por_refeicao = ci.gera_minuto_por_refeicao_lote(numero)
+        minuto_por_refeicao = ci.gera_minuto_por_refeicao_lote(numero_ou_nome)
     
     if 'erro' in minuto_por_refeicao:
         return Response(minuto_por_refeicao, status=status.HTTP_400_BAD_REQUEST)
@@ -171,20 +172,20 @@ def minuto_por_refeicao(request, animal_ou_lote, numero, data=None):
 
 
 @api_view(['GET'])
-def evolucao_peso_por_dia(request, numero):
+def evolucao_peso_por_dia(request, numero_ou_nome):
     """Gera um relatório da evolução do peso vivo de um animal
 
     Args:
-        animal_id: id do animal
+        numero_ou_nome: numero do brinco do animal ou nome do lote
     """
     try:
-        animal = Animal.objects.get(brinco__numero=numero)
+        animal = Animal.objects.get(brinco__numero=numero_ou_nome)
     except Animal.DoesNotExist:
-        return Response({'erro': f'Não existe um animal com um brinco de número {numero}'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'erro': f'Não existe um animal com um brinco de número {numero_ou_nome}'}, status=status.HTTP_400_BAD_REQUEST)
     
     refeicoes = Refeicao.objects.filter(animal=animal)
     if not refeicoes.exists():
-        return Response({'erro': f'não foram encontradas refeições para o animal com o brinco {numero}'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'erro': f'não foram encontradas refeições para o animal com o brinco {numero_ou_nome}'}, status=status.HTTP_400_BAD_REQUEST)
     
     pesos = {}
     for refeicao in refeicoes:
@@ -221,7 +222,7 @@ def evolucao_consumo_diario(request, animal_ou_lote, numero):
     
     #lote
     elif animal_ou_lote == 'lote':
-        animais = Animal.objects.filter(lote=numero)
+        animais = Animal.objects.filter(lote__nome=numero)
         if not animais.exists():
             return Response({'erro': f'não foram encontrados animais para o lote de id {numero}'}, status=status.HTTP_400_BAD_REQUEST)
         

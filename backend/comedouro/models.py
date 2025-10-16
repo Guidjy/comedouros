@@ -12,7 +12,7 @@ class Lote(models.Model):
 
 class Brinco(models.Model):
     tag_id = models.CharField(max_length=128, blank=True, null=True)
-    numero = models.IntegerField()
+    numero = models.CharField(max_length=128)
     
     def __str__(self):
         if self.numero:
