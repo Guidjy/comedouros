@@ -331,7 +331,7 @@ GET /api/evolucao-consumo-diario/lote/LoteA/
 
 ---
 
-### 🔹**Evolução do Ganho de Peso**
+### **Evolução do Ganho de Peso**
 
 **Endpoint:**  
 `GET /api/evolucao-ganho/<animal_ou_lote>/<numero_ou_nome>/`
