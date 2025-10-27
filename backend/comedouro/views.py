@@ -172,42 +172,66 @@ def minuto_por_refeicao(request, animal_ou_lote, numero_ou_nome, data=None):
 
 
 @api_view(['GET'])
-def evolucao_peso_por_dia(request, numero_ou_nome):
+def evolucao_peso_por_dia(request, animal_ou_lote, numero_ou_nome):
     """Gera um relatório da evolução do peso vivo de um animal
 
     Args:
-        numero_ou_nome: numero do brinco do animal ou nome do lote
+        animal_ou_lote (str): string 'animal' ou 'lote' para decidir qual relatório gerar.
+        numero_ou_nome (str): numero do brinco do animal ou nome do lote
     """
-    try:
-        animal = Animal.objects.get(brinco__numero=numero_ou_nome)
-    except Animal.DoesNotExist:
-        return Response({'erro': f'Não existe um animal com um brinco de número {numero_ou_nome}'}, status=status.HTTP_400_BAD_REQUEST)
     
-    refeicoes = Refeicao.objects.filter(animal=animal)
-    if not refeicoes.exists():
-        return Response({'erro': f'não foram encontradas refeições para o animal com o brinco {numero_ou_nome}'}, status=status.HTTP_400_BAD_REQUEST)
-    
-    pesos = {}
-    for refeicao in refeicoes:
-        pesos[f'{refeicao.data}'] = refeicao.peso_vivo_entrada_kg
+    # animal
+    if animal_ou_lote == 'animal':
+        try:
+            animal = Animal.objects.get(brinco__numero=numero_ou_nome)
+        except Animal.DoesNotExist:
+            return Response({'erro': f'Não existe um animal com um brinco de número {numero_ou_nome}'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        refeicoes = Refeicao.objects.filter(animal=animal)
+        if not refeicoes.exists():
+            return Response({'erro': f'não foram encontradas refeições para o animal com o brinco {numero_ou_nome}'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        pesos = {}
+        for refeicao in refeicoes:
+            pesos[f'{refeicao.data}'] = refeicao.peso_vivo_entrada_kg
+            
+    # lote
+    elif animal_ou_lote == 'lote':
+        animais = Animal.objects.filter(lote__nome=numero_ou_nome)
+        if not animais.exists():
+            return Response({'erro': f'não foram encontrados animais para o lote de id {numero_ou_nome}'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        refeicoes = Refeicao.objects.filter(animal__lote__nome=numero_ou_nome)
+        if not refeicoes.exists():
+            return Response({'erro': f'não foram encontradas refeições para o animal com o brinco {numero_ou_nome}'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        pesos = {}
+        for refeicao in refeicoes:
+            if f'{refeicao.data}' not in pesos:
+                pesos[f'{refeicao.data}'] = 0
+            pesos[f'{refeicao.data}'] += refeicao.peso_vivo_entrada_kg
+        
+    else:
+        return Response({'erro': f'argumento invárlido "{animal_ou_lote}"'}, status=status.HTTP_400_BAD_REQUEST)
         
     return Response(pesos, status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])
-def evolucao_consumo_diario(request, animal_ou_lote, numero):
+def evolucao_consumo_diario(request, animal_ou_lote, numero_ou_nome):
     """Gera um relatório da evolução do consumo diário de um animal ou lote
 
     Args:
-        id (int): id do animal ou lote a gerar o relatório
+        animal_ou_lote (str): string 'animal' ou 'lote' para decidir qual relatório gerar.
+        numero_ou_nome (str): numero do brinco do animal ou nome do lote
     """
     
     #animal
     if animal_ou_lote == 'animal':
         try:
-            animal = Animal.objects.get(brinco__numero=numero)
+            animal = Animal.objects.get(brinco__numero=numero_ou_nome)
         except Animal.DoesNotExist:
-            return Response({'erro': f'Não existe um animal com um brinco de número {numero}'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'erro': f'Não existe um animal com um brinco de número {numero_ou_nome}'}, status=status.HTTP_400_BAD_REQUEST)
         
         refeicoes = Refeicao.objects.filter(animal=animal)
         if not refeicoes.exists():
@@ -222,9 +246,9 @@ def evolucao_consumo_diario(request, animal_ou_lote, numero):
     
     #lote
     elif animal_ou_lote == 'lote':
-        animais = Animal.objects.filter(lote__nome=numero)
+        animais = Animal.objects.filter(lote__nome=numero_ou_nome)
         if not animais.exists():
-            return Response({'erro': f'não foram encontrados animais para o lote de id {numero}'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'erro': f'não foram encontrados animais para o lote {numero_ou_nome}'}, status=status.HTTP_400_BAD_REQUEST)
         
         consumo = {}
         for animal in animais:
@@ -243,38 +267,72 @@ def evolucao_consumo_diario(request, animal_ou_lote, numero):
 
 
 @api_view(['GET'])
-def evolucao_ganho(request, numero):
+def evolucao_ganho(request, animal_ou_lote, numero_ou_nome):
     """Gera um relatório da evolução de ganho de peso de um animal
 
     Args:
-        animal_id (int): id do animal
+        animal_ou_lote (str): string 'animal' ou 'lote' para decidir qual relatório gerar.
+        numero_ou_nome (str): numero do brinco do animal ou nome do lote
     """
-    try:
-        animal = Animal.objects.get(brinco__numero=numero)
-    except Animal.DoesNotExist:
-        return Response({'erro': f'Não existe um animal com um brinco de número {numero}'}, status=status.HTTP_400_BAD_REQUEST)
     
-    ganho = dp.calcula_ganho_peso_animal(animal)
-    if 'erro' in ganho:
-        return Response(ganho, status=status.HTTP_400_BAD_REQUEST)
+    # animal
+    if animal_ou_lote == 'animal':
+        try:
+            animal = Animal.objects.get(brinco__numero=numero_ou_nome)
+        except Animal.DoesNotExist:
+            return Response({'erro': f'Não existe um animal com um brinco de número {numero_ou_nome}'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        ganho = dp.calcula_ganho_peso_animal(animal)
+        if 'erro' in ganho:
+            return Response(ganho, status=status.HTTP_400_BAD_REQUEST)
+        
+    elif animal_ou_lote == 'lote':
+        animais = Animal.objects.filter(lote__nome=numero_ou_nome)
+        if not animais.exists():
+            return Response({'erro': f'não foram encontrados animais para o lote {numero_ou_nome}'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        ganho = dp.calcula_ganho_peso_lote(animais)
+        if 'erro' in ganho:
+            return Response(ganho, status=status.HTTP_400_BAD_REQUEST)
+    
+    else:
+        return Response({'erro': f'argumento invárlido "{animal_ou_lote}"'}, status=status.HTTP_400_BAD_REQUEST)
+        
     return Response(ganho, status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])
-def evolucao_gmd(request, numero):
+def evolucao_gmd(request, animal_ou_lote, numero_ou_nome):
     """Gera um relatório da evolução do GMD (ganho médio diário)
 
     Args:
-        animal_id (int): id do animal
+        animal_ou_lote (str): string 'animal' ou 'lote' para decidir qual relatório gerar.
+        numero_ou_nome (str): numero do brinco do animal ou nome do lote
     """
-    try:
-        animal = Animal.objects.get(brinco__numero=numero)
-    except Animal.DoesNotExist:
-        return Response({'erro': f'Não existe um animal com um brinco de número {numero}'}, status=status.HTTP_400_BAD_REQUEST)
     
-    gmd = dp.calcula_gmd_animal(animal)
-    if 'erro' in gmd:
-        return Response(gmd, status=status.HTTP_400_BAD_REQUEST)
+    #animal
+    if animal_ou_lote == 'animal':
+        try:
+            animal = Animal.objects.get(brinco__numero=numero_ou_nome)
+        except Animal.DoesNotExist:
+            return Response({'erro': f'Não existe um animal com um brinco de número {numero_ou_nome}'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        gmd = dp.calcula_gmd_animal(animal)
+        if 'erro' in gmd:
+            return Response(gmd, status=status.HTTP_400_BAD_REQUEST)
+        
+    elif animal_ou_lote == 'lote':
+        animais = Animal.objects.filter(lote__nome=numero_ou_nome)
+        if not animais.exists():
+            return Response({'erro': f'não foram encontrados animais para o lote {numero_ou_nome}'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        gmd = dp.calcula_gmd_lote(animais)
+        if 'erro' in gmd:
+            return Response(gmd, status=status.HTTP_400_BAD_REQUEST)
+        
+    else:
+        return Response({'erro': f'argumento invárlido "{animal_ou_lote}"'}, status=status.HTTP_400_BAD_REQUEST)
+    
     return Response(gmd, status=status.HTTP_200_OK)
     
 

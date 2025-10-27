@@ -21,10 +21,10 @@ urlpatterns = [
     path('minuto-por-refeicao/<str:animal_ou_lote>/<str:numero_ou_nome>/', views.minuto_por_refeicao),
     path('minuto-por-refeicao/<str:animal_ou_lote>/<str:numero_ou_nome>/<str:data>/', views.minuto_por_refeicao),
     # desempenho
-    path('evolucao-peso-por-dia/<int:numero_ou_nome>/', views.evolucao_peso_por_dia),
-    path('evolucao-consumo-diario/<str:animal_ou_lote>/<str:numero>/', views.evolucao_consumo_diario),
-    path('evolucao-ganho/<int:numero>/', views.evolucao_ganho),
-    path('evolucao-gmd/<int:numero>/', views.evolucao_gmd),
+    path('evolucao-peso-por-dia/<str:animal_ou_lote>/<str:numero_ou_nome>/', views.evolucao_peso_por_dia),
+    path('evolucao-consumo-diario/<str:animal_ou_lote>/<str:numero_ou_nome>/', views.evolucao_consumo_diario),
+    path('evolucao-ganho/<str:animal_ou_lote>/<str:numero_ou_nome>/', views.evolucao_ganho),
+    path('evolucao-gmd/<str:animal_ou_lote>/<str:numero_ou_nome>/', views.evolucao_gmd),
     #viabilidade
     path('custo-total/<str:animal_ou_lote>/<str:numero_ou_nome>/<str:preco_kg_racao>/', views.custo_total),
     path('evolucao-custo-diario/<str:animal_ou_lote>/<str:numero_ou_nome>/<str:preco_kg_racao>/', views.evolucao_custo_diario),

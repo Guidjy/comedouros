@@ -254,12 +254,36 @@ Calcula o tempo médio (em minutos) das refeições de um animal ou lote.
 
 ## 3. Desempenho
 
-### **Evolução do Peso**
+Todos os endpoints de desempenho seguem o mesmo padrão de rota e aceitam tanto **animal** quanto **lote**:
+
+```
+GET /api/<rota>/<animal_ou_lote>/<numero_ou_nome>/
+```
+
+| Parâmetro | Tipo | Descrição |
+|------------|------|------------|
+| `animal_ou_lote` | string | `'animal'` ou `'lote'` |
+| `numero_ou_nome` | string | Número do brinco (animal) ou nome do lote |
+
+### 🔹 **Evolução do Peso**
 
 **Endpoint:**  
-`GET /api/evolucao-peso-por-dia/{brinco}/`
+`GET /api/evolucao-peso-por-dia/<animal_ou_lote>/<numero_ou_nome>/`
 
-**Retorna:**
+**Descrição:**  
+Retorna a evolução do peso vivo (kg) de um animal ou lote ao longo do tempo.
+
+**Exemplo (animal):**
+```bash
+GET /api/evolucao-peso-por-dia/animal/101/
+```
+
+**Exemplo (lote):**
+```bash
+GET /api/evolucao-peso-por-dia/lote/LoteA/
+```
+
+**Resposta:**
 ```json
 {
   "2025-10-10": 200.5,
@@ -267,17 +291,32 @@ Calcula o tempo médio (em minutos) das refeições de um animal ou lote.
 }
 ```
 
+**Erros possíveis:**
+```json
+{"erro": "Não existe um animal com um brinco de número 101"}
+```
+
 ---
 
-### **Evolução do Consumo Diário**
+### 🔹 **Evolução do Consumo Diário**
 
-**Endpoints:**
-```
-GET /api/evolucao-consumo-diario/animal/{brinco}/
-GET /api/evolucao-consumo-diario/lote/{nome}/
+**Endpoint:**  
+`GET /api/evolucao-consumo-diario/<animal_ou_lote>/<numero_ou_nome>/`
+
+**Descrição:**  
+Retorna o consumo diário de ração (kg) por animal ou lote.
+
+**Exemplo (animal):**
+```bash
+GET /api/evolucao-consumo-diario/animal/101/
 ```
 
-**Retorna:**
+**Exemplo (lote):**
+```bash
+GET /api/evolucao-consumo-diario/lote/LoteA/
+```
+
+**Resposta:**
 ```json
 {
   "2025-10-10": 3.0,
@@ -285,14 +324,32 @@ GET /api/evolucao-consumo-diario/lote/{nome}/
 }
 ```
 
+**Erros possíveis:**
+```json
+{"erro": "não foram encontradas refeições para o animal com o brinco 101"}
+```
+
 ---
 
-### **Evolução do Ganho de Peso**
+### 🔹 **Evolução do Ganho de Peso**
 
 **Endpoint:**  
-`GET /api/evolucao-ganho/{brinco}/`
+`GET /api/evolucao-ganho/<animal_ou_lote>/<numero_ou_nome>/`
 
-**Retorna:**
+**Descrição:**  
+Gera um relatório da evolução do ganho de peso de um animal ou lote.
+
+**Exemplo (animal):**
+```bash
+GET /api/evolucao-ganho/animal/101/
+```
+
+**Exemplo (lote):**
+```bash
+GET /api/evolucao-ganho/lote/LoteA/
+```
+
+**Resposta:**
 ```json
 {
   "2025-10-11": 4.8,
@@ -300,20 +357,43 @@ GET /api/evolucao-consumo-diario/lote/{nome}/
 }
 ```
 
+**Erros possíveis:**
+```json
+{"erro": "não foram encontrados animais para o lote LoteA"}
+```
+
 ---
 
-### **Evolução do GMD (Ganho Médio Diário)**
+### 🔹 **Evolução do GMD (Ganho Médio Diário)**
 
 **Endpoint:**  
-`GET /api/evolucao-gmd/{brinco}/`
+`GET /api/evolucao-gmd/<animal_ou_lote>/<numero_ou_nome>/`
 
-**Retorna:**
+**Descrição:**  
+Gera um relatório com o ganho médio diário (kg/dia) de um animal ou lote.
+
+**Exemplo (animal):**
+```bash
+GET /api/evolucao-gmd/animal/101/
+```
+
+**Exemplo (lote):**
+```bash
+GET /api/evolucao-gmd/lote/LoteA/
+```
+
+**Resposta:**
 ```json
 {
   "2025-10-10": 0.0,
   "2025-10-11": 2.3,
   "2025-10-12": 2.6
 }
+```
+
+**Erros possíveis:**
+```json
+{"erro": "argumento invárlido 'gmd'"}
 ```
 
 ---
