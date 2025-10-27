@@ -265,7 +265,7 @@ GET /api/<rota>/<animal_ou_lote>/<numero_ou_nome>/
 | `animal_ou_lote` | string | `'animal'` ou `'lote'` |
 | `numero_ou_nome` | string | Número do brinco (animal) ou nome do lote |
 
-### 🔹 **Evolução do Peso**
+###  **Evolução do Peso**
 
 **Endpoint:**  
 `GET /api/evolucao-peso-por-dia/<animal_ou_lote>/<numero_ou_nome>/`
@@ -298,7 +298,7 @@ GET /api/evolucao-peso-por-dia/lote/LoteA/
 
 ---
 
-### 🔹 **Evolução do Consumo Diário**
+###  **Evolução do Consumo Diário**
 
 **Endpoint:**  
 `GET /api/evolucao-consumo-diario/<animal_ou_lote>/<numero_ou_nome>/`
@@ -331,7 +331,7 @@ GET /api/evolucao-consumo-diario/lote/LoteA/
 
 ---
 
-### 🔹 **Evolução do Ganho de Peso**
+### 🔹**Evolução do Ganho de Peso**
 
 **Endpoint:**  
 `GET /api/evolucao-ganho/<animal_ou_lote>/<numero_ou_nome>/`
@@ -364,7 +364,7 @@ GET /api/evolucao-ganho/lote/LoteA/
 
 ---
 
-### 🔹 **Evolução do GMD (Ganho Médio Diário)**
+###  **Evolução do GMD (Ganho Médio Diário)**
 
 **Endpoint:**  
 `GET /api/evolucao-gmd/<animal_ou_lote>/<numero_ou_nome>/`
