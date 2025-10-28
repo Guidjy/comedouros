@@ -65,40 +65,53 @@ class RefeicaoViewSet(viewsets.ModelViewSet):
 def cria_animais_com_csv(request):
     """Cria animais a partir de um arquivo csv
     """
+    
+    # lê os dados do csv
     arquivo = request.FILES.get('arquivo')
     animais, refeicoes = le_relatorio_cocho(arquivo)
     
-    # adiciona os animais e refeições ao banco de dados
-    tag_dos_animais = {}
-    lote = Lote.objects.get(id=2)
-    for tag_id, numero in animais.items():
-        print(f'{tag_id}: {numero}')
+    # adiciona todos ao "lote_real_1" por enquanto
+    try:
+        lote = Lote.objects.get(nome="lote_real_1")
+    except Lote.DoesNotExist:
+        return Response({'erro': 'lote_real_1 não encontrado'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    # adiciona os animais ao banco de dados
+    tag_animal_map = {}
+    for animal in animais:
+        tag_id = animal['tag_id']
+        numero = animal['numero']
         # cria ou pega o brinco
-        brinco, _ = Brinco.objects.get_or_create(
+        brinco, criado = Brinco.objects.get_or_create(
             tag_id=tag_id,
-            defaults={'numero': numero}
+            numero=numero
         )
-        # cria ou pega oanimal
-        animal, _ = Animal.objects.get_or_create(
+        # cria ou pega o animal
+        a, criado = Animal.objects.get_or_create(
             brinco=brinco,
-            defaults={'lote': lote}
+            lote=lote
         )
-        tag_dos_animais[f'{tag_id}'] = animal
+        tag_animal_map[tag_id] = a
         
         
+    # adiciona as refeições ao banco
     for refeicao in refeicoes:
-        animal = tag_dos_animais[f'{refeicao['animal']}']
+        horario_entrada = refeicao['horario_entrada']
+        horario_saida = refeicao['horario_saida']
+        data = refeicao['data']
+        consumo_kg = refeicao['consumo_kg']
+        peso_vivo_entrada_kg = refeicao['peso_vivo_entrada_kg']
+        tag_id = refeicao['tag_id']
         
-        refeicao, _ = Refeicao.objects.get_or_create(
-            horario_entrada=refeicao['horario_entrada'],
-            horario_saida=refeicao['horario_saida'],
-            consumo_kg=refeicao['consumo_kg'],
-            peso_vivo_entrada_kg=refeicao['peso_vivo_entrada_kg'],
-            data=refeicao['data'],
-            animal=animal
+        r, criado = Refeicao.objects.get_or_create(
+            horario_entrada=horario_entrada,
+            horario_saida=horario_saida,
+            consumo_kg=consumo_kg,
+            peso_vivo_entrada_kg=peso_vivo_entrada_kg,
+            data=data,
+            animal=tag_animal_map[tag_id]
         )
-    
-    
+        
     return Response({'sucesso': 'Animais e refeições registradas com sucesso'}, status=status.HTTP_200_OK)
     
 
