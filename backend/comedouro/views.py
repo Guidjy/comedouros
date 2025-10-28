@@ -65,9 +65,10 @@ class RefeicaoViewSet(viewsets.ModelViewSet):
 def cria_animais_com_csv(request):
     """Cria animais a partir de um arquivo csv
     """
+    print("FILES:", request.FILES)
     
     # lê os dados do csv
-    arquivo = request.FILES.get('arquivo')
+    arquivo = request.FILES.get('file')
     animais, refeicoes = le_relatorio_cocho(arquivo)
     
     # adiciona todos ao "lote_real_1" por enquanto
