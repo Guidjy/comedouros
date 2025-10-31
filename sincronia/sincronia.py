@@ -47,7 +47,7 @@ def main():
     while True:
         agora = datetime.now()
         print(agora.strftime('> [%Y-%m-%d %H:%M:%S]'))
-        time.sleep(30)  # evita uso desnecessário do cpu. Alterar intervalo se quizer sincronizações mais ou menos frequentes
+        time.sleep(5)  # evita uso desnecessário do cpu. Alterar intervalo se quizer sincronizações mais ou menos frequentes
         
         # verifica se houveram mudanças no arquivo
         try:

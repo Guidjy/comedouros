@@ -36,8 +36,11 @@ class AnimalViewSet(viewsets.ModelViewSet):
         # adiciona o peso atual a response
         animal = Animal.objects.get(id=kwargs.get('pk'))
         peso_atual = Refeicao.objects.filter(animal=animal).last().peso_vivo_entrada_kg
+        # adiciona o número do brinco e tag_id do brinco a response
         response =  super().retrieve(request, *args, **kwargs)
         response.data['peso_atual'] = peso_atual
+        response.data['brinco_numero'] = animal.brinco.numero
+        response.data['brinco_tag_id'] = animal.brinco.tag_id
         return response
     
     def list(self, request, *args, **kwargs):
@@ -49,6 +52,8 @@ class AnimalViewSet(viewsets.ModelViewSet):
             animal_dict["peso_atual"] = (
                 refeicao.peso_vivo_entrada_kg if refeicao else None
             )
+            animal_dict['brinco_numero'] = animal.brinco.numero
+            animal_dict['brinco_tag_id'] = animal.brinco.tag_id
             
         return response
     
