@@ -29,5 +29,7 @@ urlpatterns = [
     path('custo-total/<str:animal_ou_lote>/<str:numero_ou_nome>/<str:preco_kg_racao>/', views.custo_total),
     path('evolucao-custo-diario/<str:animal_ou_lote>/<str:numero_ou_nome>/<str:preco_kg_racao>/', views.evolucao_custo_diario),
     path('ganho-por-dia/<str:animal_ou_lote>/<str:numero_ou_nome>/<str:reais_por_kg_de_peso_vivo>/', views.ganho_por_dia),
+    # relatórios gerais
+    path('relatorio-geral/<str:animal_ou_lote>/<str:numero_ou_nome>/<str:preco_kg_racao>/<str:reais_por_kg_de_peso_vivo>/', views.relatorio_geral),
 ]
 

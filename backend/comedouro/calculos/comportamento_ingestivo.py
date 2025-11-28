@@ -6,28 +6,21 @@ from datetime import datetime
 # comportamento ingestivo
 
 
-def gera_consumo_diario_animal(animal_id, data=None):
+def gera_consumo_diario_animal(animal, refeicoes=None, data=None):
     """Gera um relatório do consumo diário total de um animal por dia, ou do consumo por refeição
     em um dia, se a data for especificada
 
     Args:
-        - animal_id: id do animal a gerar relatório
+        - animal: objetyo do animal
         - data: restringe a visualização à um dia só
     """
     
-    # busca o objeto do animal
-    try:
-        animal = Animal.objects.get(id=animal_id)
-    except Animal.DoesNotExist as e:
-        return {'erro': f'{e}'}
-    
-    # busca todas as refeições do animal da mais recente pra menos recente
-    if data:
-        refeicoes = Refeicao.objects.filter(animal=animal, data=data)
-    else:
-        refeicoes = Refeicao.objects.filter(animal=animal).order_by('data')
-    if not refeicoes.exists():
-        return {'erro': 'Não foram encontradas refeições realizadas por esse animal.'}
+    # ordena as refeições da mais recente pra menos recente
+    if data is not None:
+        if data:
+            refeicoes = refeicoes.filter(animal=animal, data=data)
+        else:
+            refeicoes = refeicoes.order_by('data')
 
     if data is None:
         # adiciona o consumo de cada refeicao a um dicionário {'data': [consumo...]}
@@ -102,27 +95,21 @@ def calcula_duracao_refeicao(refeicao):
     return duracao
 
         
-def gera_minuto_por_refeicao_animal(animal_id, data=None):
+def gera_minuto_por_refeicao_animal(animal, refeicoes, data=None):
     """Gera um relatório da quantidade de minutos por refeição de um animal. Se um dia for
     passado por argumento, são retornados os tempos exatos de cada refeição naquele dia, se não,
     calcula-se a média das durações das refeições para cada dia.
 
     Args:
-        animal_id: id do animal
+        animal: objeto do animal
         data: data
     """
-    try:
-        animal = Animal.objects.get(id=animal_id)
-    except Animal.DoesNotExist:
-        return {'erro': f'Não existe um animal com o id {animal_id}'}
     
     minuto_por_refeicao = {}
     
     if data is not None:
-        # pega as refeições do animal
-        refeicoes = Refeicao.objects.filter(animal=animal, data=data)
         if not refeicoes.exists():
-            return {'erro': f'Não foram encontradas refeições para o animal de id {animal_id}'}
+            return {'erro': f'Não foram encontradas refeições para o animal de id {animal.id}'}
         # adiciona as refeições a um dicionário {'número da refeição': duração}
         i = 1
         for refeicao in refeicoes:
@@ -130,10 +117,8 @@ def gera_minuto_por_refeicao_animal(animal_id, data=None):
             i += 1
         
     else:
-        # pega as refeições do animal
-        refeicoes = Refeicao.objects.filter(animal=animal)
         if not refeicoes.exists():
-            return {'erro': f'Não foram encontradas refeições para o animal de id {animal_id}'}
+            return {'erro': f'Não foram encontradas refeições para o animal de id {animal.id}'}
         # adiciona as refeições ao dicionário {'data': [duração_refeição1, duração_refeição2...]}
         for refeicao in refeicoes:
             duracao = calcula_duracao_refeicao(refeicao)

@@ -2,14 +2,32 @@ import numpy as np
 from ..models import Animal, Refeicao
 
 
-def calcula_ganho_peso_animal(animal):
+def calcula_evolucao_peso_por_dia_animal(refeicoes):
+    pesos = {}
+    for refeicao in refeicoes:
+        pesos[f'{refeicao.data}'] = refeicao.peso_vivo_entrada_kg
+    
+    return pesos
+
+
+def calcula_evolucao_consumo_diario_animal(refeicoes):
+    consumo = {}
+    for refeicao in refeicoes:
+        data = refeicao.data
+        if f'{data}' not in consumo:
+            consumo[f'{data}'] = 0
+        consumo[f'{data}'] += refeicao.consumo_kg
+    
+    return consumo
+
+
+def calcula_ganho_peso_animal(animal, refeicoes):
     """Calcula o ganho de peso diário de um animal ao longo de toda sua vida.
 
     Args:
         animal (obj): objeto do animal
     """
     
-    refeicoes = Refeicao.objects.filter(animal=animal)
     if not refeicoes.exists():
         return {'erro': f'Não existem refeições relacionadas ao animal de id {animal.id}'}
     elif len(refeicoes) < 2:
@@ -51,14 +69,14 @@ def calcula_ganho_peso_lote(animais):
     return ganho
     
 
-def calcula_gmd_animal(animal):
+def calcula_gmd_animal(animal, refeicoes):
     """Calcula o GMD de um animal ao longo de toda sua vida
 
     Args:
         animal (obj): objeto do animal
+        refeicoes ([obj]):
     """
     
-    refeicoes = Refeicao.objects.filter(animal=animal)
     if not refeicoes.exists():
         return {'erro': f'Não existem refeições relacionadas ao animal de id {animal.id}'}
     elif len(refeicoes) < 2:

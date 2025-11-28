@@ -9,6 +9,7 @@ from .serializers import *
 from .utils.csv import le_relatorio_cocho
 from .calculos import comportamento_ingestivo as ci
 from .calculos import desempenho as dp
+from .calculos import viabilidade as vb
 
 
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -140,10 +141,9 @@ def consumo_diario(request, animal_ou_lote, numero_ou_nome, data=None):
         except Animal.DoesNotExist:
             return Response({'erro': f'Não existe um animal com um brinco de número {numero_ou_nome}'}, status=status.HTTP_400_BAD_REQUEST)
         
-        if data is None:
-            consumo_diario = ci.gera_consumo_diario_animal(animal.id)
-        else:
-            consumo_diario = ci.gera_consumo_diario_animal(animal.id, data)
+        refeicoes = Refeicao.objects.filter(animal=animal)
+        
+        consumo_diario = ci.gera_consumo_diario_animal(animal, refeicoes, data)
         
         if 'erro' in consumo_diario:
             return Response(consumo_diario, status=status.HTTP_400_BAD_REQUEST)
@@ -172,10 +172,9 @@ def minuto_por_refeicao(request, animal_ou_lote, numero_ou_nome, data=None):
         except Animal.DoesNotExist:
             return Response({'erro': f'Não existe um animal com um brinco de número {numero_ou_nome}'}, status=status.HTTP_400_BAD_REQUEST)
         
-        if data is not None:
-            minuto_por_refeicao = ci.gera_minuto_por_refeicao_animal(animal.id, data)
-        else:
-            minuto_por_refeicao = ci.gera_minuto_por_refeicao_animal(animal.id)
+        refeicoes = Refeicao.objects.filter(animal=animal)
+        
+        minuto_por_refeicao = ci.gera_minuto_por_refeicao_animal(animal, refeicoes, data)
             
     else:
         minuto_por_refeicao = ci.gera_minuto_por_refeicao_lote(numero_ou_nome)
@@ -210,9 +209,7 @@ def evolucao_peso_por_dia(request, animal_ou_lote, numero_ou_nome):
         if not refeicoes.exists():
             return Response({'erro': f'não foram encontradas refeições para o animal com o brinco {numero_ou_nome}'}, status=status.HTTP_400_BAD_REQUEST)
         
-        pesos = {}
-        for refeicao in refeicoes:
-            pesos[f'{refeicao.data}'] = refeicao.peso_vivo_entrada_kg
+        pesos = dp.calcula_evolucao_peso_por_dia_animal(refeicoes)
             
     # lote
     elif animal_ou_lote == 'lote':
@@ -256,12 +253,7 @@ def evolucao_consumo_diario(request, animal_ou_lote, numero_ou_nome):
         if not refeicoes.exists():
             return Response({'erro': f'não foram encontradas refeições para o animal de id {id}'}, status=status.HTTP_400_BAD_REQUEST)
         
-        consumo = {}
-        for refeicao in refeicoes:
-            data = refeicao.data
-            if f'{data}' not in consumo:
-                consumo[f'{data}'] = 0
-            consumo[f'{data}'] += refeicao.consumo_kg
+        consumo = dp.calcula_evolucao_consumo_diario_animal(refeicoes)
     
     #lote
     elif animal_ou_lote == 'lote':
@@ -301,7 +293,14 @@ def evolucao_ganho(request, animal_ou_lote, numero_ou_nome):
         except Animal.DoesNotExist:
             return Response({'erro': f'Não existe um animal com um brinco de número {numero_ou_nome}'}, status=status.HTTP_400_BAD_REQUEST)
         
-        ganho = dp.calcula_ganho_peso_animal(animal)
+        refeicoes = Refeicao.objects.filter(animal=animal)
+        if not refeicoes.exists():
+            return Response({'erro': f'Não existem refeições relacionadas ao animal de id {animal.id}'}, status=status.HTTP_400_BAD_REQUEST)
+        elif len(refeicoes) < 2:
+            return Response({'erro': f'Não existem refeições suficientes para calcular o ganho do animal de id {animal.id}'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        ganho = dp.calcula_ganho_peso_animal(animal, refeicoes)
+        
         if 'erro' in ganho:
             return Response(ganho, status=status.HTTP_400_BAD_REQUEST)
         
@@ -336,7 +335,13 @@ def evolucao_gmd(request, animal_ou_lote, numero_ou_nome):
         except Animal.DoesNotExist:
             return Response({'erro': f'Não existe um animal com um brinco de número {numero_ou_nome}'}, status=status.HTTP_400_BAD_REQUEST)
         
-        gmd = dp.calcula_gmd_animal(animal)
+        refeicoes = Refeicao.objects.filter(animal=animal)
+        if not refeicoes.exists():
+            return Response({'erro': f'Não existem refeições relacionadas ao animal de id {animal.id}'}, status=status.HTTP_400_BAD_REQUEST)
+        elif len(refeicoes) < 2:
+            return Response({'erro': f'Não existem refeições suficientes para calcular o ganho do animal de id {animal.id}'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        gmd = dp.calcula_gmd_animal(animal, refeicoes)
         if 'erro' in gmd:
             return Response(gmd, status=status.HTTP_400_BAD_REQUEST)
         
@@ -381,9 +386,10 @@ def custo_total(request, animal_ou_lote, numero_ou_nome, preco_kg_racao):
             return Response({'erro': f'Não existe um animal com um brinco de número {numero_ou_nome}'}, status=status.HTTP_400_BAD_REQUEST)
         
         refeicoes = Refeicao.objects.filter(animal=animal)
-        custo_total = 0
-        for refeicao in refeicoes:
-            custo_total += refeicao.consumo_kg * preco_kg_racao
+        if not refeicoes.exists():
+            return Response({'erro': f'Não existem refeições relacionadas ao animal de id {animal.id}'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        custo_total = vb.calcula_custo_total_animal(refeicoes, preco_kg_racao)
         
         return Response({'custo_total': round(custo_total, 2)}, status=status.HTTP_200_OK)
     
@@ -427,14 +433,12 @@ def evolucao_custo_diario(request, animal_ou_lote, numero_ou_nome, preco_kg_raca
         except Animal.DoesNotExist:
             return Response({'erro': f'Não existe um animal com um brinco de número {numero_ou_nome}'}, status=status.HTTP_400_BAD_REQUEST)
         
-        # calcula o custo de um animal em um dia e adiciona a um dicionário
         refeicoes = Refeicao.objects.filter(animal=animal)
-        evolucao_custo = {}
-        for refeicao in refeicoes:
-            data = refeicao.data
-            if f'{data}' not in evolucao_custo:
-                evolucao_custo[f'{data}'] = 0
-            evolucao_custo[f'{data}'] += refeicao.consumo_kg * preco_kg_racao
+        if not refeicoes.exists():
+            return Response({'erro': f'Não existem refeições relacionadas ao animal de id {animal.id}'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # calcula o custo de um animal em um dia e adiciona a um dicionário
+        evolucao_custo = vb.calcula_evolucao_custo_diario_animal(refeicoes, preco_kg_racao)
         
         return Response(evolucao_custo, status=status.HTTP_200_OK)
     
@@ -480,12 +484,12 @@ def ganho_por_dia(request, animal_ou_lote, numero_ou_nome, reais_por_kg_de_peso_
         except Animal.DoesNotExist:
             return Response({'erro': f'Não existe um animal com um brinco de número {numero_ou_nome}'}, status=status.HTTP_400_BAD_REQUEST)
         
+        refeicoes = Refeicao.objects.filter(animal=animal)
+        if not refeicoes.exists():
+            return Response({'erro': f'Não existem refeições relacionadas ao animal de id {animal.id}'}, status=status.HTTP_400_BAD_REQUEST)
+        
         # ganho por dia = GMD * reais/kg_pv
-        gmd = dp.calcula_gmd_animal(animal)
-        ganho_por_dia = {}
-        for data, ganho in gmd.items():
-            ganho_por_dia[f'{data}'] = ganho * reais_por_kg_de_peso_vivo
-            ganho_por_dia[f'{data}'] = round(ganho_por_dia[f'{data}'], 2)
+        ganho_por_dia = vb.calcula_ganho_por_dia_animal(animal, refeicoes, reais_por_kg_de_peso_vivo)
         
         return Response(ganho_por_dia, status=status.HTTP_200_OK)
     
@@ -509,3 +513,53 @@ def ganho_por_dia(request, animal_ou_lote, numero_ou_nome, reais_por_kg_de_peso_
 
     else:
         return Response({'erro': f'argumento invárlido "{animal_ou_lote}"'}, status=status.HTTP_400_BAD_REQUEST)
+    
+
+# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+# Relatório Geral
+# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+
+@api_view(['GET'])
+def relatorio_geral(request, animal_ou_lote, numero_ou_nome, preco_kg_racao, reais_por_kg_de_peso_vivo):
+    """Gera um relatório geral de todos os grafos para um animal
+
+    Args:
+        animal_ou_lote (str): string 'animal' ou 'lote' para decidir qual relatório gerar.
+        numero_ou_nome (str): numero do brinco do animal ou nome do lote
+        preco_kg_racao (str): preço do kilograma da ração  (formato x.y)
+        reais_por_kg_de_peso_vivo (str): preço do kilograma de peso vivo de um animal (formato x.y)
+    """
+    
+    preco_kg_racao = float(preco_kg_racao)
+    reais_por_kg_de_peso_vivo = float(reais_por_kg_de_peso_vivo)
+    
+    if animal_ou_lote == 'animal':
+        try:
+            animal = Animal.objects.get(brinco__numero=numero_ou_nome)
+        except Animal.DoesNotExist:
+            return Response({'erro': f'Não existe um animal com um brinco de número {numero_ou_nome}'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        refeicoes = Refeicao.objects.filter(animal=animal)
+        if not refeicoes.exists():
+            return Response({'erro': f'não foram encontradas refeições para o animal com o brinco {numero_ou_nome}'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        relatorio = {}
+        relatorio['consumo_diario'] = ci.gera_consumo_diario_animal(animal, refeicoes)
+        relatorio['minuto_por_refeicao'] = ci.gera_minuto_por_refeicao_animal(animal, refeicoes)
+        relatorio['evolucao_peso_por_dia'] = dp.calcula_evolucao_peso_por_dia_animal(refeicoes)
+        relatorio['evolucao_consumo_diario'] = dp.calcula_evolucao_consumo_diario_animal(refeicoes)
+        relatorio['evolucao_ganho'] = dp.calcula_ganho_peso_animal(animal, refeicoes)
+        relatorio['evolucao_gmd'] = dp.calcula_gmd_animal(animal, refeicoes)
+        relatorio['custo_total'] = vb.calcula_custo_total_animal(refeicoes, preco_kg_racao)
+        relatorio['evolucao_custo_diario'] = vb.calcula_evolucao_custo_diario_animal(refeicoes, preco_kg_racao)
+        relatorio['ganho_por_dia'] = vb.calcula_ganho_por_dia_animal(animal, refeicoes, reais_por_kg_de_peso_vivo)
+        
+        return Response(relatorio, status=status.HTTP_200_OK)
+    
+    elif animal_ou_lote == 'lote':
+        return Response({'yurp': 'lote'}, status=status.HTTP_200_OK)
+    
+    else:
+        return Response({'erro': f'argumento invárlido "{animal_ou_lote}"'}, status=status.HTTP_400_BAD_REQUEST)
+    
