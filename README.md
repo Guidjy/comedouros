@@ -34,6 +34,7 @@ https://comedouros.onrender.com/
    - [Custo Total](#custo-total)
    - [Evolução do Custo Diário](#evolução-do-custo-diário)
    - [Ganho por Dia](#ganho-por-dia)
+5. [Relatórios Gerais](#5-relatório-geral)
 
 ---
 
@@ -468,6 +469,100 @@ Calcula o ganho em reais por dia, com base no GMD e no preço do kg do peso vivo
 ```
 
 ---
+
+## 5. Relatório Geral
+
+### **Relatório Geral Consolidado**
+
+**Endpoint:**  
+`GET /api/relatorio-geral/<animal_ou_lote>/<numero_ou_nome>/<preco_kg_racao>/<reais_por_kg_de_peso_vivo>/`
+
+**Descrição:**  
+Gera **um único relatório completo**, reunindo **todos os gráficos e métricas** já existentes na API, incluindo:
+- Consumo diário
+- Minutos por refeição
+- Evolução do peso
+- Evolução do consumo diário
+- Evolução do ganho de peso
+- Evolução do GMD
+- Custo total
+- Evolução do custo diário
+- Ganho por dia
+
+Funciona para **animal** e **lote**.
+
+---
+
+### 🔧 Parâmetros
+| Parâmetro | Tipo | Descrição |
+|-----------|------|------------|
+| `animal_ou_lote` | string | `'animal'` ou `'lote'` |
+| `numero_ou_nome` | string | Número do brinco (animal) ou nome do lote |
+| `preco_kg_racao` | float (string) | Preço por kg da ração (formato `x.y`) |
+| `reais_por_kg_de_peso_vivo` | float (string) | Preço do kg do peso vivo (formato `x.y`) |
+
+---
+
+### 📌 Exemplos de Requisição
+
+#### Animal
+```bash
+GET /api/relatorio-geral/animal/101/2.5/14.3/
+```
+
+#### Lote
+```bash
+GET /api/relatorio-geral/lote/LoteA/2.5/14.3/
+```
+
+#### Todos os animais
+```bash
+GET /api/relatorio-geral/lote/TODOS/2.5/14.3/
+```
+
+---
+
+### 📤 Exemplo de Resposta
+```json
+{
+  "consumo_diario": {
+    "2025-10-10": 3.1,
+    "2025-10-11": 2.9
+  },
+  "minuto_por_refeicao": {
+    "2025-10-10": 19.4,
+    "2025-10-11": 20.1
+  },
+  "evolucao_peso_por_dia": {
+    "2025-10-10": 200.5,
+    "2025-10-11": 205.3
+  },
+  "evolucao_consumo_diario": {
+    "2025-10-10": 3.0,
+    "2025-10-11": 2.8
+  },
+  "evolucao_ganho": {
+    "2025-10-11": 4.8,
+    "2025-10-12": 6.1
+  },
+  "evolucao_gmd": {
+    "2025-10-10": 0.0,
+    "2025-10-11": 2.3
+  },
+  "custo_total": 324.5,
+  "evolucao_custo_diario": {
+    "2025-10-10": 15.6,
+    "2025-10-11": 17.2
+  },
+  "ganho_por_dia": {
+    "2025-10-10": 9.8,
+    "2025-10-11": 12.1
+  }
+}
+```
+
+---
+
 
 ✅ **Observações gerais**
 - Todas as respostas de erro seguem o formato:

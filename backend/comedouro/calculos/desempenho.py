@@ -10,6 +10,16 @@ def calcula_evolucao_peso_por_dia_animal(refeicoes):
     return pesos
 
 
+def calcula_evolucao_peso_por_dia_lote(refeicoes):
+    pesos = {}
+    for refeicao in refeicoes:
+        if f'{refeicao.data}' not in pesos:
+            pesos[f'{refeicao.data}'] = 0
+        pesos[f'{refeicao.data}'] += refeicao.peso_vivo_entrada_kg
+        
+    return pesos
+
+
 def calcula_evolucao_consumo_diario_animal(refeicoes):
     consumo = {}
     for refeicao in refeicoes:
@@ -18,6 +28,17 @@ def calcula_evolucao_consumo_diario_animal(refeicoes):
             consumo[f'{data}'] = 0
         consumo[f'{data}'] += refeicao.consumo_kg
     
+    return consumo
+
+
+def calcula_evolucao_consumo_diario_lote(refeicoes):
+    consumo = {}
+    for refeicao in refeicoes:
+        data = refeicao.data
+        if f'{data}' not in consumo:
+            consumo[f'{data}'] = 0
+        consumo[f'{data}'] += refeicao.consumo_kg
+        
     return consumo
 
 
@@ -45,7 +66,7 @@ def calcula_ganho_peso_animal(animal, refeicoes):
     return ganho
 
 
-def calcula_ganho_peso_lote(animais):
+def calcula_ganho_peso_lote(animais, refeicoes):
     """Calcula o ganho de peso diário de um lote ao longo de toda sua vida.
 
     Args:
@@ -54,11 +75,11 @@ def calcula_ganho_peso_lote(animais):
     ganho = {}
     
     for animal in animais:
-        refeicoes = Refeicao.objects.filter(animal=animal)
-        peso_inicial = refeicoes[0].peso_vivo_entrada_kg
-        primeiro_dia = refeicoes[0].data
+        refeicoes_animal = refeicoes.filter(animal=animal)
+        peso_inicial = refeicoes_animal[0].peso_vivo_entrada_kg
+        primeiro_dia = refeicoes_animal[0].data
         
-        for refeicao in refeicoes:
+        for refeicao in refeicoes_animal:
             data = refeicao.data
             if data == primeiro_dia:
                 continue
@@ -97,7 +118,7 @@ def calcula_gmd_animal(animal, refeicoes):
     return gmd
 
 
-def calcula_gmd_lote(animais):
+def calcula_gmd_lote(animais, refeicoes):
     """Calcula o GMD de um lote
 
     Args:
@@ -106,14 +127,14 @@ def calcula_gmd_lote(animais):
     
     gmd = {}
     for animal in animais:
-        refeicoes = Refeicao.objects.filter(animal=animal)
+        refeicoes_animal = refeicoes.filter(animal=animal)
         if not refeicoes.exists():
             return {'erro': f'Não existem refeições relacionadas ao animal de id {animal.id}'}
         elif len(refeicoes) < 2:
             return {'erro': f'Não existem refeições suficientes para calcular o gmd do animal de id {animal.id}'}
         
         pesos = {}
-        for refeicao in refeicoes:
+        for refeicao in refeicoes_animal:
             pesos[f'{refeicao.data}'] = refeicao.peso_vivo_entrada_kg
             
         dias = list(pesos.keys())

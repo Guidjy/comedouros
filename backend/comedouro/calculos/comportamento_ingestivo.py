@@ -44,30 +44,20 @@ def gera_consumo_diario_animal(animal, refeicoes=None, data=None):
     return consumo_diario
 
 
-def gera_consumo_diario_lote(lote_nome, data=None):
+def gera_consumo_diario_lote(animais, refeicoes, data=None):
     """Gera um relatório do consumo diário total de um lote por dia
 
     Args:
         lote_id: id do lote a gerar consumo por refeicao
-    """
-    
-    # busca todos os animais do lote
-    animais = Animal.objects.filter(lote__nome=lote_nome)
-    if not animais.exists():
-        return {'erro': f'Não foram encontrados animais no lote {lote_nome}'}
-        
+    """   
     # percorre todos os animais do lote
     consumo_diario = {}  # {'aaaa-mm-dd': x(Kg)}
-    
     if data is None:
-        for animal in animais:
-            # pega as refeições do animal
-            refeicoes = Refeicao.objects.filter(animal=animal)
-            # adiciona as refeições ao dicionário de consumo diário
-            for refeicao in refeicoes:
-                if f'{refeicao.data}' not in consumo_diario:
-                    consumo_diario[f'{refeicao.data}'] = []
-                consumo_diario[f'{refeicao.data}'].append(refeicao.consumo_kg)
+        # adiciona as refeições ao dicionário de consumo diário
+        for refeicao in refeicoes:
+            if f'{refeicao.data}' not in consumo_diario:
+                consumo_diario[f'{refeicao.data}'] = []
+            consumo_diario[f'{refeicao.data}'].append(refeicao.consumo_kg)
         # calcula o consumo diário do lote
         for dia, consumo in consumo_diario.items():
             consumo_diario[f'{dia}'] = np.array(consumo, dtype=float).sum()
@@ -76,8 +66,8 @@ def gera_consumo_diario_lote(lote_nome, data=None):
         for animal in animais:
             brinco_num = f'{animal.brinco.numero}'
             consumo_diario[brinco_num] = []
-            refeicoes =  Refeicao.objects.filter(animal=animal, data=data)
-            for refeicao in refeicoes:
+            refeicoes_animal =  refeicoes.filter(animal=animal, data=data)
+            for refeicao in refeicoes_animal:
                 consumo_diario[brinco_num].append(refeicao.consumo_kg)
             consumo_diario[brinco_num] = np.array(consumo_diario[brinco_num], dtype=float).sum()
     
@@ -133,7 +123,7 @@ def gera_minuto_por_refeicao_animal(animal, refeicoes, data=None):
     return minuto_por_refeicao
     
 
-def gera_minuto_por_refeicao_lote(lote_nome):
+def gera_minuto_por_refeicao_lote(animais, refeicoes, data=None):
     """Gera um relatório da quantidade de minutos por refeição de um lote. Se um dia for
     passado por argumento, são retornados as medias de duração de cada refeição naquele dia, se não,
     calcula-se a média das durações das refeições para cada dia.
@@ -142,15 +132,12 @@ def gera_minuto_por_refeicao_lote(lote_nome):
         lote_nome: nome do lote
         data: data
     """
-    animais = Animal.objects.filter(lote__nome=lote_nome)
-    if not animais.exists():
-        return {'erro': f'Não foram encontrados animais para o lote {lote_nome}'}
     
     minutos_por_refeicao = {}
     
     for animal in animais:
-        refeicoes = Refeicao.objects.filter(animal=animal)
-        for refeicao in refeicoes:
+        refeicoes_animal = refeicoes.filter(animal=animal)
+        for refeicao in refeicoes_animal:
             data = refeicao.data
             if f'{data}' not in minutos_por_refeicao:
                 minutos_por_refeicao[f'{data}'] = []
